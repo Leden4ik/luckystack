@@ -1,0 +1,88 @@
+            <div class="form-group">
+                <label for="server_id" class="col-sm-3 control-label">{tmpl_var name='server_id_txt'}</label>
+                <div class="col-sm-9"><select name="server_id" id="server_id" class="form-control">
+                    {tmpl_var name='server_id'}
+                </select></div>
+            </div>
+            <div class="form-group">
+                <label for="proto" class="col-sm-3 control-label">{tmpl_var name='proto_txt'}</label>
+                <div class="col-sm-9"><select name="proto" id="proto" class="form-control">
+                    {tmpl_var name='proto'}
+                </select></div>
+            </div>
+            <div class="form-group">
+                <label for="port" class="col-sm-3 control-label">{tmpl_var name='port_txt'}</label>
+                <div class="col-sm-9"><input type="text" name="port" id="port" value="{tmpl_var name='port'}" class="form-control" />
+                <p class="help-block">{tmpl_var name='port_hint_txt'}</p></div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">{tmpl_var name='allow_all_txt'}</label>
+                <div class="col-sm-9">
+                    {tmpl_var name='allow_all'}
+                    <p class="help-block">{tmpl_var name='allow_all_hint_txt'}</p>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="allowed_ips" class="col-sm-3 control-label">{tmpl_var name='allowed_ips_txt'}</label>
+                <div class="col-sm-9"><textarea name="allowed_ips" id="allowed_ips" rows="4" class="form-control">{tmpl_var name='allowed_ips'}</textarea>
+                <p class="help-block">{tmpl_var name='allowed_ips_hint_txt'}</p>
+                <button type="button" class="btn btn-default btn-xs" id="ss_addmyip">{tmpl_var name='add_my_ip_txt'} ({tmpl_var name='my_ip'})</button>
+                <span id="ss_lockout_warn" class="text-danger" style="display:none;margin-left:8px;">{tmpl_var name='lockout_warn_txt'}</span>
+                </div>
+            </div>
+            <script type="text/javascript">
+            jQuery(function($){
+                var myip = '{tmpl_var name="my_ip"}';
+                function ssTxt(){ return $('#allowed_ips').val(); }
+                $('#ss_addmyip').off('click.ssip').on('click.ssip', function(){
+                    var t = ssTxt().replace(/\s+$/,'');
+                    if(myip && t.indexOf(myip) === -1){ $('#allowed_ips').val(t ? (t + (t.match(/,\s*$/)?' ':', ') + myip) : myip); }
+                    ssWarn();
+                });
+                function ssWarn(){
+                    var restricted = !$('input[name="allow_all"]').is(':checked');
+                    var missing = myip && ssTxt().indexOf(myip) === -1;
+                    $('#ss_lockout_warn').toggle(restricted && missing);
+                }
+                $(document).off('input.ssip change.ssip','#allowed_ips,input[name="allow_all"]')
+                           .on('input.ssip change.ssip','#allowed_ips,input[name="allow_all"]', ssWarn);
+                ssWarn();
+            });
+            </script>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">{tmpl_var name='rate_limit_txt'}</label>
+                <div class="col-sm-9">
+                    {tmpl_var name='rate_limit'}
+                    <p class="help-block">{tmpl_var name='rate_limit_hint_txt'}</p>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="geo_mode" class="col-sm-3 control-label">{tmpl_var name='geo_mode_txt'}</label>
+                <div class="col-sm-9"><select name="geo_mode" id="geo_mode" class="form-control">
+                    {tmpl_var name='geo_mode'}
+                </select>
+                <p class="help-block">{tmpl_var name='geo_mode_hint_txt'}</p></div>
+            </div>
+            <div class="form-group">
+                <label for="geo_countries" class="col-sm-3 control-label">{tmpl_var name='geo_countries_txt'}</label>
+                <div class="col-sm-9"><input type="text" name="geo_countries" id="geo_countries" value="{tmpl_var name='geo_countries'}" class="form-control" placeholder="RU, UA, BY" />
+                <p class="help-block">{tmpl_var name='geo_countries_hint_txt'}</p></div>
+            </div>
+            <div class="form-group">
+                <label for="description" class="col-sm-3 control-label">{tmpl_var name='description_txt'}</label>
+                <div class="col-sm-9"><input type="text" name="description" id="description" value="{tmpl_var name='description'}" class="form-control" />
+                <p class="help-block">{tmpl_var name='description_hint_txt'}</p></div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">{tmpl_var name='active_txt'}</label>
+                <div class="col-sm-9">
+                    {tmpl_var name='active'}
+                </div>
+            </div>
+
+        <input type="hidden" name="id" value="{tmpl_var name='id'}">
+
+        <div class="clear"><div class="right">
+            <button class="btn btn-default formbutton-success" type="button" value="{tmpl_var name='btn_save_txt'}" data-submit-form="pageForm" data-form-action="admin/firewall_restrict_edit.php">{tmpl_var name='btn_save_txt'}</button>
+            <button class="btn btn-default formbutton-default" type="button" value="{tmpl_var name='btn_cancel_txt'}" data-load-content="admin/firewall_restrict_list.php">{tmpl_var name='btn_cancel_txt'}</button>
+        </div></div>

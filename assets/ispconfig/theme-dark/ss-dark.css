@@ -1,0 +1,271 @@
+/*
+  LuckyStack: тёмная тема ISPConfig (переключатель в шапке).
+  Активна, когда на <html> стоит класс ss-dark (ставит inline-скрипт по localStorage /
+  prefers-color-scheme). Переопределяет цвета поверх штатной темы (Bootstrap 3 + ISPConfig).
+  Подключается ПОСЛЕ остальных css, поэтому !important нужен не везде, но оставлен для надёжности.
+*/
+
+/* ФУНДАМЕНТ: глушим светлые границы (#d3d7da/#ccc/#cedded — десятки мест) и светлые тени
+   («ореолы» #c5c5c5) — главная причина «грязного» вида тёмной темы. Компоненты ниже/со
+   своей специфичностью переопределяют где нужно (alert, focus и т.п.). */
+html.ss-dark * { border-color:#3a3d42 !important; box-shadow:none !important; }
+
+html.ss-dark, html.ss-dark body { background:#1e1f22 !important; color:#d7d9dc !important; }
+html.ss-dark #container,
+html.ss-dark #main-wrapper,
+html.ss-dark #inner-wrapper,
+html.ss-dark .content,
+html.ss-dark #content { background:#1e1f22 !important; }
+
+/* шапка / верхняя панель */
+html.ss-dark #headerbar,
+html.ss-dark #topnav,
+html.ss-dark .navbar,
+html.ss-dark .topbar { background:#26282c !important; border-color:#3a3d42 !important; }
+
+/* боковое/офф-канвас меню */
+html.ss-dark .pushy,
+html.ss-dark .pushy ul,
+html.ss-dark #sidebar,
+html.ss-dark .sidebar,
+html.ss-dark #navcontainer,
+html.ss-dark .sidenav { background:#26282c !important; }
+html.ss-dark #navcontainer a,
+html.ss-dark .pushy a,
+html.ss-dark .sidenav a { color:#c7cacf !important; }
+html.ss-dark .pushy li a:hover,
+html.ss-dark #navcontainer a:hover { background:#34373c !important; color:#fff !important; }
+
+/* панели/боксы/меню/модалки */
+html.ss-dark .panel,
+html.ss-dark .panel-default,
+html.ss-dark .well,
+html.ss-dark .modal-content,
+html.ss-dark .dropdown-menu,
+html.ss-dark .table-wrapper { background:#2b2d31 !important; border-color:#3a3d42 !important; color:#d7d9dc !important; }
+html.ss-dark .panel-heading,
+html.ss-dark .panel-footer,
+html.ss-dark .modal-header,
+html.ss-dark .modal-footer { background:#303338 !important; border-color:#3a3d42 !important; color:#e6e8ea !important; }
+html.ss-dark .page-header { border-bottom-color:#3a3d42 !important; }
+html.ss-dark .page-header h1,
+html.ss-dark h1, html.ss-dark h2, html.ss-dark h3 { color:#e9ebed !important; }
+html.ss-dark .fieldset-legend { color:#e6e8ea !important; border-color:#3a3d42 !important; }
+html.ss-dark hr { border-color:#3a3d42 !important; }
+
+/* таблицы */
+html.ss-dark .table, html.ss-dark table { color:#d7d9dc !important; }
+html.ss-dark .table > thead > tr > th,
+html.ss-dark thead.dark,
+html.ss-dark thead.dark th { background:#303338 !important; color:#e6e8ea !important; border-color:#3a3d42 !important; }
+html.ss-dark .table > tbody > tr > td,
+html.ss-dark .table > tbody > tr > th,
+html.ss-dark .table > tfoot > tr > td { border-color:#3a3d42 !important; }
+html.ss-dark .table-striped > tbody > tr:nth-of-type(odd) { background:#26282c !important; }
+html.ss-dark .table-hover > tbody > tr:hover { background:#34373c !important; }
+
+/* формы */
+html.ss-dark .form-control,
+html.ss-dark input[type=text], html.ss-dark input[type=password],
+html.ss-dark input[type=email], html.ss-dark input[type=number],
+html.ss-dark input[type=search], html.ss-dark textarea, html.ss-dark select {
+	background:#1b1c1f !important; color:#e0e0e0 !important; border-color:#3a3d42 !important; }
+html.ss-dark .form-control:focus { border-color:#5a86b3 !important; box-shadow:none !important; }
+html.ss-dark .form-control::placeholder { color:#8b9097 !important; }
+html.ss-dark .help-block, html.ss-dark .text-muted, html.ss-dark small { color:#9aa0a6 !important; }
+html.ss-dark label, html.ss-dark .control-label { color:#cfd2d6 !important; }
+html.ss-dark .input-group-addon { background:#303338 !important; color:#cfd2d6 !important; border-color:#3a3d42 !important; }
+
+/* кнопки (default; цветные btn-danger/success/primary оставляем как есть) */
+html.ss-dark .btn-default { background:#34373c !important; color:#dfe1e4 !important; border-color:#454850 !important; }
+html.ss-dark .btn-default:hover, html.ss-dark .btn-default:focus { background:#3f4248 !important; color:#fff !important; }
+
+/* ссылки */
+html.ss-dark a { color:#6fb3ff; }
+html.ss-dark a:hover, html.ss-dark a:focus { color:#9ccbff; }
+html.ss-dark .table a { color:#d7d9dc !important; }
+
+/* вкладки */
+html.ss-dark .nav-tabs { border-bottom-color:#3a3d42 !important; }
+html.ss-dark .nav-tabs > li > a { color:#c7cacf !important; border-color:transparent !important; }
+html.ss-dark .nav-tabs > li > a:hover { background:#303338 !important; }
+html.ss-dark .nav-tabs > li.active > a,
+html.ss-dark .nav-tabs > li.active > a:hover,
+html.ss-dark .nav-tabs > li.active > a:focus {
+	background:#2b2d31 !important; color:#fff !important; border-color:#3a3d42 #3a3d42 transparent !important; }
+
+/* алерты — затемнённые, но различимы по цвету */
+html.ss-dark .alert-success { background:#19311f !important; color:#cdeccc !important; border-color:#2c5a36 !important; }
+html.ss-dark .alert-info,
+html.ss-dark .alert-notification { background:#152d36 !important; color:#cae6ef !important; border-color:#2a5563 !important; }
+html.ss-dark .alert-warning { background:#3a3320 !important; color:#f0e3b8 !important; border-color:#6b5d2e !important; }
+html.ss-dark .alert-danger { background:#3a2020 !important; color:#f1c9c9 !important; border-color:#6b3030 !important; }
+
+/* код/преформат */
+html.ss-dark code { background:#1b1c1f !important; color:#e0a36b !important; }
+html.ss-dark pre { background:#1b1c1f !important; color:#cdd0d4 !important; border-color:#3a3d42 !important; }
+
+/* select2 (используется в формах ISPConfig) */
+html.ss-dark .select2-container--default .select2-selection,
+html.ss-dark .select2-container--default .select2-selection--single,
+html.ss-dark .select2-dropdown,
+html.ss-dark .select2-search__field,
+html.ss-dark .select2-results__option { background:#1b1c1f !important; color:#e0e0e0 !important; border-color:#3a3d42 !important; }
+html.ss-dark .select2-container--default .select2-selection__rendered { color:#e0e0e0 !important; }
+html.ss-dark .select2-results__option--highlighted { background:#34373c !important; color:#fff !important; }
+
+/* пагинация */
+html.ss-dark .pagination > li > a,
+html.ss-dark .pagination > li > span { background:#2b2d31 !important; color:#c7cacf !important; border-color:#3a3d42 !important; }
+html.ss-dark .pagination > .active > a { background:#cc151c !important; border-color:#cc151c !important; color:#fff !important; }
+
+/* кнопка-тумблер темы */
+html.ss-dark #ss-theme-toggle { background:#34373c; color:#ffd97a; border-color:#454850; }
+
+/* ===== второй слой покрытия ===== */
+
+/* верхнее меню модулей (btn-group-justified из btn-default) + активный модуль */
+html.ss-dark #topnav-container, html.ss-dark #topnav, html.ss-dark #main-navigation { background:#1e1f22 !important; }
+html.ss-dark #main-navigation .btn-default { background:#2b2d31 !important; border-color:#3a3d42 !important; color:#c7cacf !important; }
+html.ss-dark #main-navigation .btn-default:hover { background:#34373c !important; color:#fff !important; }
+html.ss-dark #main-navigation .btn-default.active { background:#cc151c !important; border-color:#cc151c !important; color:#fff !important; }
+
+/* хлебные крошки */
+html.ss-dark .breadcrumb { background:#26282c !important; }
+html.ss-dark .breadcrumb > .active { color:#9aa0a6 !important; }
+
+/* содержимое вкладок / футер / новостной сайдбар */
+html.ss-dark .tab-content, html.ss-dark .tabbox, html.ss-dark .tab-pane { background:transparent !important; }
+html.ss-dark #footer, html.ss-dark footer { background:#1e1f22 !important; color:#9aa0a6 !important; border-top-color:#3a3d42 !important; }
+html.ss-dark #sidebar, html.ss-dark .news-sidebar { background:#26282c !important; color:#c7cacf !important; }
+
+/* dropdown-пункты */
+html.ss-dark .dropdown-menu > li > a { color:#c7cacf !important; }
+html.ss-dark .dropdown-menu > li > a:hover,
+html.ss-dark .dropdown-menu > li > a:focus { background:#34373c !important; color:#fff !important; }
+html.ss-dark .dropdown-header { color:#9aa0a6 !important; }
+
+/* модалка */
+html.ss-dark .modal-title { color:#e9ebed !important; }
+html.ss-dark .modal-header .close, html.ss-dark .close { color:#d7d9dc !important; opacity:.85 !important; text-shadow:none !important; }
+html.ss-dark .modal-backdrop.in { opacity:.7 !important; }
+
+/* метки / бэйджи / well / legend / fieldset */
+html.ss-dark .label-default, html.ss-dark .badge { background:#454850 !important; color:#e6e8ea !important; }
+html.ss-dark .well { background:#2b2d31 !important; border-color:#3a3d42 !important; }
+html.ss-dark legend { color:#e6e8ea !important; border-bottom-color:#3a3d42 !important; }
+html.ss-dark fieldset { border-color:#3a3d42 !important; }
+
+/* список / заголовки datatable (иная разметка) */
+html.ss-dark .list-header, html.ss-dark .list .head, html.ss-dark .tabbox_head { background:#303338 !important; color:#e6e8ea !important; }
+
+/* datepicker (bootstrap-datetimepicker) */
+html.ss-dark .bootstrap-datetimepicker-widget,
+html.ss-dark .datepicker,
+html.ss-dark .datepicker table tr td,
+html.ss-dark .datepicker table tr th { background:#2b2d31 !important; color:#d7d9dc !important; border-color:#3a3d42 !important; }
+html.ss-dark .datepicker table tr td.day:hover,
+html.ss-dark .bootstrap-datetimepicker-widget td.day:hover { background:#34373c !important; }
+html.ss-dark .datepicker table tr td.active { background:#cc151c !important; color:#fff !important; }
+
+/* поповеры / тултипы / уведомление о датологе */
+html.ss-dark .popover { background:#2b2d31 !important; border-color:#3a3d42 !important; color:#d7d9dc !important; }
+html.ss-dark .popover-title { background:#303338 !important; color:#e6e8ea !important; }
+html.ss-dark .notification { background:#303338 !important; color:#e6e8ea !important; }
+
+/* плашки-подсказки/таблица-обёртка/границы по месту */
+html.ss-dark .panel-body, html.ss-dark .tab-pane > .panel { background:#2b2d31 !important; }
+html.ss-dark .form-group { border-color:#3a3d42 !important; }
+
+/* ===== третий слой: светло-голубые остатки (точные селекторы штатной темы) ===== */
+
+/* строки таблиц: ISPConfig использует .table tbody tr (без -hover/-striped) — отсюда голубой */
+html.ss-dark .table tbody tr:nth-child(odd) { background:#26282c !important; }
+html.ss-dark .table tbody tr:hover { background:#34373c !important; }
+
+/* реальные кнопки ISPConfig — у них БЕЛЫЙ градиент (background-image), не просто btn-default */
+html.ss-dark .formbutton-default,
+html.ss-dark #searchform button,
+html.ss-dark #main-navigation a,
+html.ss-dark .modules .button,
+html.ss-dark .tfooter {
+	background:#2b2d31 !important; background-image:none !important; color:#dfe1e4 !important; border-color:#3a3d42 !important; }
+html.ss-dark .formbutton-default:hover,
+html.ss-dark #searchform button:hover,
+html.ss-dark #main-navigation a:hover {
+	background:#34373c !important; background-image:none !important; color:#fff !important; }
+html.ss-dark #main-navigation a.active {
+	background:#cc151c !important; background-image:none !important; color:#fff !important; border-color:#cc151c !important; }
+
+/* плитки модулей (стартовая/дашборд) и заголовок новостного сайдбара */
+html.ss-dark .modules li { background:#2b2d31 !important; border-color:#3a3d42 !important; box-shadow:none !important; }
+html.ss-dark .modules li a { color:#d7d9dc !important; }
+html.ss-dark #sidebar header { background:#303338 !important; color:#cfd2d6 !important; }
+
+/* hover вкладок в content-tab-wrapper */
+html.ss-dark .content-tab-wrapper .nav-tabs > li > a:hover { background:#303338 !important; }
+
+/* alert-notification (info-плашка) была светло-голубой */
+html.ss-dark .alert-notification { background:#152d36 !important; border-color:#2a5563 !important; color:#cae6ef !important; }
+
+/* серо-голубые границы-обёртки */
+html.ss-dark .well, html.ss-dark .table-wrapper { border-color:#3a3d42 !important; }
+
+/* ===== четвёртый слой: фоны, заданные словом white / #fff (греп по hex их пропускал) ===== */
+html.ss-dark .table tbody tr:nth-child(even) { background:#2b2d31 !important; }
+
+/* фильтр-строка в шапке таблиц (thead.dark второй tr) — светлый градиент с !important */
+html.ss-dark thead.dark tr:nth-child(2),
+html.ss-dark thead.dark tr:nth-child(2) th,
+html.ss-dark thead.dark tr:nth-child(2) td { background:#26282c !important; background-image:none !important; }
+/* hover плиток модулей (светлый градиент) */
+html.ss-dark .modules .button:hover { background:#34373c !important; background-image:none !important; }   /* были белыми */
+html.ss-dark .content-tab-wrapper { background:#2b2d31 !important; border-color:#3a3d42 !important; }
+html.ss-dark .content-tab-wrapper .nav-tabs .active a,
+html.ss-dark .content-tab-wrapper .nav-tabs > li.active > a { background:#2b2d31 !important; color:#fff !important; }
+html.ss-dark .table-wrapper { background:#2b2d31 !important; }
+html.ss-dark .pushy a:hover, html.ss-dark .pushy a.active { background:#34373c !important; color:#fff !important; }
+
+/* дашборд: чарты метрик — у canvas inline background:white; делаем прозрачным (тёмная панель
+   сзади). Цвета осей/сетки Chart.js задаются в JS дашлета (см. правку metrics.htm). */
+html.ss-dark canvas { background-color:transparent !important; }
+
+/* нативные <select>: системная стрелка рисуется светлой («светлая полоска справа») — гасим
+   нативный вид и рисуем свой светлый шеврон (SVG data-uri). */
+html.ss-dark select,
+html.ss-dark select.form-control {
+	-webkit-appearance:none !important; -moz-appearance:none !important; appearance:none !important;
+	background-color:#1b1c1f !important;
+	background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23c7cacf' d='M4 6l4 4 4-4z'/%3E%3C/svg%3E") !important;
+	background-repeat:no-repeat !important; background-position:right 10px center !important; background-size:12px !important;
+	padding-right:28px !important;
+}
+html.ss-dark select::-ms-expand { display:none !important; }
+/* стрелка select2 v4 (CSS-треугольник из border) */
+html.ss-dark .select2-container--default .select2-selection--single .select2-selection__arrow b {
+	border-color:#c7cacf transparent transparent transparent !important; }
+
+/* select2 v3 (ISPConfig использует СТАРЫЙ select2 — .select2-choice/.select2-drop, спрайты
+   select2.png). Видимый «белый» выпадающий — это .select2-choice (с белым градиентом). */
+html.ss-dark .select2-container,
+html.ss-dark .form-control.select2-container,
+html.ss-dark .form-control .select2-choice,
+html.ss-dark .select2-container .select2-choice,
+html.ss-dark .select2-container-multi .select2-choices,
+html.ss-dark .form-control.select2-container .select2-choices,
+html.ss-dark .select2-drop,
+html.ss-dark .select2-drop-active,
+html.ss-dark .select2-search input {
+	background:#1b1c1f !important; background-image:none !important; color:#e0e0e0 !important; border-color:#3a3d42 !important; }
+html.ss-dark .select2-container .select2-choice > .select2-chosen,
+html.ss-dark .select2-chosen { color:#e0e0e0 !important; }
+html.ss-dark .select2-container .select2-choice abbr,
+html.ss-dark .select2-container .select2-choice .select2-arrow {
+	background:#26282c !important; background-image:none !important; border-left-color:#3a3d42 !important; }
+html.ss-dark .select2-results { background:#1b1c1f !important; }
+html.ss-dark .select2-results .select2-result-label { color:#d7d9dc !important; }
+html.ss-dark .select2-results .select2-highlighted { background:#34373c !important; color:#fff !important; }
+html.ss-dark .select2-no-results, html.ss-dark .select2-searching { background:#1b1c1f !important; color:#9aa0a6 !important; }
+
+/* добить таб-обёртку (на случай специфичности) */
+html.ss-dark .content-tab-wrapper, html.ss-dark .content-tab-wrapper .nav-tabs { background:#2b2d31 !important; }

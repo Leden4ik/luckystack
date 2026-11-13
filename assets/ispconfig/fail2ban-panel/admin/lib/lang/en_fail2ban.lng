@@ -1,0 +1,20 @@
+<?php
+$wb['list_head_txt'] = 'Fail2ban';
+$wb['list_desc_txt'] = 'Status of fail2ban jails and currently banned IPs. You can unban an address or ban one manually.';
+$wb['no_data_txt'] = 'No data yet. The status is refreshed by a background job (≤1 min) — check back shortly. Make sure fail2ban is installed and running.';
+$wb['updated_txt'] = 'Updated';
+$wb['apply_hint_txt'] = 'unban/ban requests are applied by a background job within ≤1 min';
+$wb['jail_txt'] = 'Jail';
+$wb['banned_txt'] = 'Banned';
+$wb['failed_txt'] = 'Failed';
+$wb['total_txt'] = 'Total banned';
+$wb['action_txt'] = 'Action';
+$wb['unban_txt'] = 'Unban';
+$wb['ban_txt'] = 'Ban';
+$wb['none_banned_txt'] = 'No IPs currently banned in this jail.';
+$wb['ban_manual_txt'] = 'Ban an IP manually';
+$wb['ban_ip_ph_txt'] = 'IP address';
+$wb['queued_unban_txt'] = 'Unban queued for';
+$wb['queued_ban_txt'] = 'Ban queued for';
+$wb['bad_input_txt'] = 'Invalid jail name or IP address.';
+?>

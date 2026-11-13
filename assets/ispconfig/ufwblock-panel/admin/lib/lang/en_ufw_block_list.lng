@@ -1,0 +1,36 @@
+<?php
+$wb['list_head_txt'] = 'Firewall blocklist (ufw)';
+$wb['list_desc_txt'] = 'Manually block IPs and subnets via ufw (deny). The rule is inserted first — it applies before the port allow-rules and drops all traffic from the source. Applied by a background root cron (≤1 min).';
+$wb['target_ph_txt'] = 'IP or subnet (81.30.98.0/24)';
+$wb['comment_ph_txt'] = 'Comment (optional)';
+$wb['block_txt'] = 'Block';
+$wb['bad_target_txt'] = 'Invalid target: need IPv4/IPv6 or CIDR (mask no wider than /8 for IPv4, /16 for IPv6).';
+$wb['lockout_txt'] = 'You cannot block a subnet that contains your current IP:';
+$wb['queued_txt'] = 'Queued for blocking:';
+$wb['queued_hint_txt'] = 'The ufw rule will be applied in the background within ≤1 min.';
+$wb['removed_txt'] = 'Removed from the blocklist (the background process will drop the ufw rule ≤1 min).';
+$wb['suggest_head_txt'] = 'Suggestions: subnet clusters (from CrowdSec)';
+$wb['suggest_desc_txt'] = 'Subnets from which CrowdSec has actively banned ≥3 IPs (an attacker rotating hosts within a /24). The CrowdSec bouncer does not enforce range bans — block the whole subnet here, via ufw.';
+$wb['subnet_txt'] = 'Subnet';
+$wb['ipcount_txt'] = 'IPs banned';
+$wb['sample_txt'] = 'Sample IPs';
+$wb['block_subnet_txt'] = 'Block /24';
+$wb['blocklist_head_txt'] = 'Current blocklist';
+$wb['no_blocks_txt'] = 'Blocklist is empty. Add an IP/subnet above or accept a suggestion.';
+$wb['target_txt'] = 'Target';
+$wb['comment_txt'] = 'Comment';
+$wb['active_txt'] = 'Enabled';
+$wb['applied_txt'] = 'In ufw';
+$wb['applied_yes_txt'] = 'applied ✓';
+$wb['applied_pending_txt'] = 'pending ≤1 min';
+$wb['added_txt'] = 'Added';
+$wb['action_txt'] = 'Action';
+$wb['yes_txt'] = 'yes';
+$wb['no_txt'] = 'no';
+$wb['enable_txt'] = 'Enable';
+$wb['disable_txt'] = 'Disable';
+$wb['delete_txt'] = 'Delete';
+$wb['confirm_del_txt'] = 'Remove this entry from the blocklist?';
+$wb['apply_hint_txt'] = 'Changes are applied by a background root cron (reconciles ufw ↔ list, once/min).';
+$wb['pending_apply_txt'] = 'Some changes are pending apply — the page refreshes itself (≤1 min).';
+?>

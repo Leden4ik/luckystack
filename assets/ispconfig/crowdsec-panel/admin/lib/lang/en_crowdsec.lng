@@ -1,0 +1,23 @@
+<?php
+$wb['list_head_txt'] = 'CrowdSec';
+$wb['list_desc_txt'] = 'Active CrowdSec decisions (banned IPs from local scenarios and community blocklists). You can remove a ban.';
+$wb['no_data_txt'] = 'No active decisions (or CrowdSec is not running). The list is refreshed by a background job (≤1 min). Requires FIREWALL=crowdsec.';
+$wb['total_txt'] = 'Active decisions';
+$wb['updated_txt'] = 'Updated';
+$wb['apply_hint_txt'] = 'remove requests are applied by a background job within ≤1 min';
+$wb['country_txt'] = 'Country';
+$wb['as_txt'] = 'AS / Network';
+$wb['scenario_txt'] = 'Scenario / reason';
+$wb['origin_txt'] = 'Origin';
+$wb['expires_txt'] = 'Expires in';
+$wb['action_txt'] = 'Action';
+$wb['remove_txt'] = 'Remove';
+$wb['queued_txt'] = 'Remove queued for';
+$wb['queued_hint_txt'] = 'A background job will apply it within ≤1 min.';
+$wb['bad_ip_txt'] = 'Invalid IP address.';
+$wb['applying_txt'] = 'Removal is being applied — the list refreshes itself (≤1 min).';
+$wb['blocked_total_txt'] = 'Total IPs blocked';
+$wb['capi_txt'] = 'community blocklist (CAPI)';
+$wb['local_txt'] = 'local (this server)';
+$wb['capi_hint_txt'] = 'Community blocklist (CAPI) = proactive bans of IPs flagged by the whole CrowdSec network — pulled and enforced automatically. The table below lists only the local decisions (from this server\'s scenarios), which you can remove.';
+?>

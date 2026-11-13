@@ -1,0 +1,171 @@
+#!/bin/bash
+# luckyctl: одна команда для всего, что делается с сервером LuckyStack из консоли.
+# Сама ничего не делает, переводит подкоманды в ключи server-setup.sh.
+set -uo pipefail
+
+LS_OPT_DIR="${LS_OPT_DIR:-/opt/luckystack}"
+UPDATE_ITEM_LIST="pkgs security confcustom tuning mail certs rcplugins backup notify nginx ispconfig"
+BACKUP_BIN=/usr/local/sbin/server-backup.sh
+
+# Код рядом с самой командой. Если это рабочий выпуск, идём через current: так панель и
+# журналы видят один и тот же путь, а после обновления сразу работает новый выпуск.
+self="$(readlink -f -- "${BASH_SOURCE[0]}")"
+CODE_DIR="$(dirname "$self")"
+if [[ -e "$LS_OPT_DIR/current" && "$(readlink -f -- "$LS_OPT_DIR/current")" == "$CODE_DIR" ]]; then
+	CODE_DIR="$LS_OPT_DIR/current"
+fi
+SS="$CODE_DIR/server-setup.sh"
+
+version_of() { grep -m1 -oE 'VERSION="[^"]+"' "$1" 2>/dev/null | cut -d'"' -f2; }
+
+usage() {
+	cat <<EOF
+luckyctl $(version_of "$SS"), команда LuckyStack
+
+  luckyctl                 главное меню: установка, обновление, PHP, проверка и всё остальное
+  luckyctl <команда> [параметры]
+
+Установка
+  install [ключи]          установка с ключами: --resume, --only ЭТАП, --from ЭТАП,
+                           --unattended, --reconfigure, --force, --dry-run, --clean-build
+  adopt                    подключить бэкап, уведомления и защиту к серверу, собранному вручную
+  uninstall [--purge]      удалить компоненты (с --purge вместе с данными)
+
+Состояние
+  status                   что установлено и каких версий
+  check                    проверка здоровья: службы, порты, сертификаты, бэкапы
+  log [N]                  последние N строк журнала (по умолчанию 50)
+  paths                    где лежат код, настройки, состояние и журнал
+  diagnostics              архив для разбора проблемы, без паролей и токенов
+
+Обслуживание
+  update [пункты] [--dry-run]
+                           обновить пакеты и заново наложить наши настройки; без пунктов
+                           спросит, что обновлять. Пункты: ${UPDATE_ITEM_LIST}
+  rollback nginx|roundcube|luckystack
+                           вернуть прошлую версию; повтор отменяет откат
+  add-php [X.Y]            добавить версию PHP
+  remove-php               удалить версию PHP (не даст удалить ту, на которой сайты)
+  timezone [пояс]          сменить часовой пояс везде, например Europe/Moscow
+
+Данные
+  backup                   сделать бэкап сейчас
+  backup list              список снимков
+  restore                  восстановить из снимка
+
+Сам LuckyStack
+  self-update              обновить LuckyStack до последнего выпуска
+  version                  текущая версия и есть ли новая
+  help [команда]           эта справка или справка по команде
+
+Общие ключи: --lang en (английский интерфейс), --dry-run (показать, ничего не меняя).
+EOF
+}
+
+help_for() {
+	case "$1" in
+		install)   echo "luckyctl install [--resume | --only ЭТАП | --from ЭТАП] [--unattended] [--reconfigure] [--force] [--dry-run]"
+		           echo "Без ключей открывает главное меню, как просто luckyctl. --resume продолжает с первого незавершённого этапа."
+		           echo "Этапы: preflight database webserver php nodejs phpmyadmin postgresql mail rspamd dns ftp ssl"
+		           echo "       security monit webmail ispconfig hostcert rcplugins maildeliver mailsni tuning backup malware" ;;
+		update)    echo "luckyctl update [пункт ...] [--dry-run]"
+		           echo "Без пунктов спрашивает, что обновлять. С пунктами работает без вопросов, например:"
+		           echo "  luckyctl update pkgs security"
+		           echo "  luckyctl update nginx ispconfig    (ядро; перед ним стоит сделать luckyctl backup)"
+		           echo "Пункты: ${UPDATE_ITEM_LIST}" ;;
+		rollback)  echo "luckyctl rollback nginx       прошлая сборка nginx, сначала проверяет ваш конфиг"
+		           echo "luckyctl rollback roundcube   прошлая версия вебмейла вместе со схемой базы"
+		           echo "luckyctl rollback luckystack  прошлый выпуск самого LuckyStack"
+		           echo "Повтор той же команды возвращает обратно." ;;
+		backup)    echo "luckyctl backup         сделать снимок сейчас"
+		           echo "luckyctl backup list    список снимков"
+		           echo "Восстановление: luckyctl restore" ;;
+		log)       echo "luckyctl log [N]   последние N строк журнала установки и обновлений" ;;
+		*)         usage ;;
+	esac
+}
+
+need_root() {
+	[[ $EUID -eq 0 ]] && return 0
+	echo "Нужны права root: sudo luckyctl${*:+ $*}" >&2
+	exit 1
+}
+
+run_ss() {
+	[[ -f "$SS" ]] || { echo "Не найден ${SS}. LuckyStack не установлен или каталог повреждён." >&2; exit 1; }
+	exec "$SS" "$@"
+}
+
+setup_log_path() { echo "${LS_LOG_DIR:-/var/log/luckystack}/setup.log"; }
+
+cmd="${1:-}"; shift || true
+
+case "$cmd" in
+	# Без команды открываем главное меню. Без терминала меню не показать, тогда справка.
+	"")           if [[ -t 0 ]]; then need_root; run_ss; else usage; fi ;;
+	--lang|--lang=*|--dry-run) need_root; run_ss "$cmd" "$@" ;;
+	help|-h|--help) if [[ -n "${1:-}" ]]; then help_for "$1"; else usage; fi ;;
+
+	install)      need_root "$cmd"; run_ss "$@" ;;
+	status)       run_ss --status "$@" ;;
+	check)        run_ss --healthcheck "$@" ;;
+	diagnostics)  need_root "$cmd"; run_ss --diagnostics "$@" ;;
+	restore)      need_root "$cmd"; run_ss --restore "$@" ;;
+	adopt)        need_root "$cmd"; run_ss --adopt "$@" ;;
+	uninstall)    need_root "$cmd"; run_ss --uninstall "$@" ;;
+	remove-php)   need_root "$cmd"; run_ss --remove-php "$@" ;;
+	self-update)  need_root "$cmd"; run_ss --self-update "$@" ;;
+
+	add-php)      need_root "$cmd"; run_ss --add-php "$@" ;;
+	timezone)     need_root "$cmd"; run_ss --timezone "$@" ;;
+
+	rollback)
+		need_root "$cmd"
+		case "${1:-}" in
+			nginx|roundcube|luckystack) t="$1"; shift; run_ss --rollback "$t" "$@" ;;
+			*) help_for rollback; exit 2 ;;
+		esac ;;
+
+	update)
+		need_root "$cmd"
+		items=(); pass=()
+		for a in "$@"; do
+			case "$a" in
+				-*) pass+=("$a") ;;
+				*)  if [[ " $UPDATE_ITEM_LIST " == *" $a "* ]]; then items+=("$a")
+				    else echo "Неизвестный пункт обновления: $a" >&2; help_for update >&2; exit 2; fi ;;
+			esac
+		done
+		if ((${#items[@]})); then export UPDATE_ITEMS="${items[*]}"; fi
+		run_ss --update "${pass[@]}" ;;
+
+	backup)
+		need_root "$cmd"
+		[[ -x "$BACKUP_BIN" ]] || { echo "Бэкап не настроен: нет ${BACKUP_BIN}. Включить: luckyctl install --only backup" >&2; exit 1; }
+		case "${1:-}" in
+			"")   exec "$BACKUP_BIN" ;;
+			list) exec "$BACKUP_BIN" --list ;;
+			*)    help_for backup; exit 2 ;;
+		esac ;;
+
+	log)
+		need_root "$cmd"
+		n="${1:-50}"; [[ "$n" =~ ^[0-9]+$ ]] || { help_for log; exit 2; }
+		f="$(setup_log_path)"
+		[[ -f "$f" ]] || { echo "Журнала ещё нет: ${f}" >&2; exit 1; }
+		tail -n "$n" "$f" ;;
+
+	paths)
+		echo "Код:        $CODE_DIR -> $(readlink -f -- "$CODE_DIR")"
+		echo "Настройки:  ${LS_ETC_DIR:-/etc/luckystack}/setup.conf"
+		echo "Состояние:  ${LS_VAR_DIR:-/var/lib/luckystack}/setup.state"
+		echo "Журнал:     $(setup_log_path)"
+		echo "Выпуски:    $LS_OPT_DIR/releases" ;;
+
+	version|--version|-V)
+		echo "LuckyStack $(version_of "$SS") ($(readlink -f -- "$CODE_DIR"))"
+		[[ $EUID -eq 0 ]] && "$SS" --check-update 2>/dev/null | grep -vE '^\s*$' | tail -n 3
+		exit 0 ;;
+
+	*) echo "Неизвестная команда: $cmd" >&2; echo "Список команд: luckyctl help" >&2; exit 2 ;;
+esac

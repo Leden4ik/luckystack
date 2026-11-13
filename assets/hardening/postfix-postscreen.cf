@@ -1,0 +1,47 @@
+# =============================================================================
+# Postfix postscreen — отсев спам-ботов ДО SMTP-сессии (меньше спама и нагрузки)
+# =============================================================================
+# postscreen перехватывает соединения на :25 раньше smtpd: проверяет «вежливость»
+# клиента (PREGREET/PIPELINING) и репутацию по DNSBL. Боты отваливаются сразу.
+#
+# ⚠️ Меняет обработку порта 25 — ВНИМАТЕЛЬНО, можно случайно резать почту.
+#    Поэтому ниже action = ignore (только лог). Понаблюдайте 1-2 дня
+#    (grep postscreen /var/log/mail.log), затем смените ignore → enforce.
+#
+# ⚠️ Spamhaus zen для серверов с заметным объёмом требует регистрации (DQS).
+#    Для небольшого сервера обычный zen.spamhaus.org работает. Если ловите
+#    отказы от Spamhaus — заведите DQS-ключ и поменяйте хост на <key>.zen.dq.spamhaus.net.
+# =============================================================================
+
+# --- /etc/postfix/main.cf — добавить в конец ---
+postscreen_greet_action = ignore
+postscreen_dnsbl_action = ignore
+postscreen_dnsbl_threshold = 2
+postscreen_dnsbl_sites =
+    zen.spamhaus.org*2
+    bl.spamcop.net*1
+    b.barracudacentral.org*1
+postscreen_dnsbl_whitelist_threshold = -1
+postscreen_access_list = permit_mynetworks
+
+# После наблюдения переключить на принудительный режим:
+#   postscreen_greet_action = enforce
+#   postscreen_dnsbl_action = enforce
+
+# =============================================================================
+# --- /etc/postfix/master.cf — заменить строку smtp/инет на postscreen ---
+# Было:
+#   smtp      inet  n       -       y       -       -       smtpd
+# Стало (postscreen на :25 + smtpd как pass-сервис + вспомогательные):
+#
+#   smtp      inet  n       -       y       -       1       postscreen
+#   smtpd     pass  -       -       y       -       -       smtpd
+#   dnsblog   unix  -       -       y       -       0       dnsblog
+#   tlsproxy  unix  -       -       y       -       0       tlsproxy
+#
+# Submission (587) и smtps (465) НЕ трогаем — postscreen только на :25.
+# =============================================================================
+# Применить:
+#   postfix check && systemctl reload postfix
+#   tail -f /var/log/mail.log | grep -i postscreen
+# =============================================================================

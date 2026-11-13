@@ -1,0 +1,29 @@
+<?php
+$wb['server_id_txt'] = 'Server';
+$wb['proto_txt'] = 'Protocol';
+$wb['port_txt'] = 'Port';
+$wb['port_hint_txt'] = 'TCP/UDP port or range, e.g. 80, 443, 22, 40110:40210.';
+$wb['allow_all_txt'] = 'Open to all';
+$wb['allow_all_hint_txt'] = 'Public port — open to everyone (the "Allowed IPs" field is ignored). Uncheck to open the port only to the IPs listed below.';
+$wb['allowed_ips_txt'] = 'Allowed IPs';
+$wb['allowed_ips_hint_txt'] = 'Only when "Open to all" is off: IPs allowed to reach this port (one per line/comma-separated), everyone else blocked. Empty = rule does nothing.';
+$wb['description_txt'] = 'Description';
+$wb['description_hint_txt'] = 'What this port is for, e.g. "HTTPS", "SSH — admins", "MySQL — app server".';
+$wb['active_txt'] = 'Active';
+$wb['scope_all_txt'] = 'Everyone';
+$wb['scope_ip_txt'] = 'IPs only';
+$wb['port_error_regex'] = 'Port must be a number or range A:B (1-65535).';
+$wb['allowed_ips_error'] = 'The "Allowed IPs" field has an invalid address. Use IPv4/IPv6 or CIDR (e.g. 1.2.3.4 or 10.0.0.0/24).';
+$wb['add_my_ip_txt'] = 'Add my IP';
+$wb['lockout_warn_txt'] = '⚠ Your IP is not listed — for an access port (SSH/panel) you may lock yourself out.';
+$wb['rate_limit_txt'] = 'Rate-limit';
+$wb['rate_limit_hint_txt'] = 'Throttle new connections per source IP (anti brute-force / flood). Drops sources exceeding ~30 new conn/min. Established connections are not affected.';
+$wb['geo_mode_txt'] = 'Geo-filter';
+$wb['geo_off_txt'] = 'Off';
+$wb['geo_allow_txt'] = 'Allow only listed countries';
+$wb['geo_block_txt'] = 'Block listed countries';
+$wb['geo_mode_hint_txt'] = '"Allow only" = country whitelist for this port (the IP/Open-to-all settings above are ignored). "Block" = deny those countries, everyone else keeps the IP/Open-to-all rules. Country IP ranges are fetched from ipdeny.com and refreshed weekly.';
+$wb['geo_countries_txt'] = 'Countries';
+$wb['geo_countries_hint_txt'] = 'ISO 3166 alpha-2 codes, comma-separated, e.g. RU, UA, BY. Only used when Geo-filter is not Off.';
+$wb['geo_countries_error'] = 'Countries must be two-letter ISO codes (e.g. RU, UA, DE).';
+?>

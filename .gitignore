@@ -1,0 +1,7 @@
+# Runtime-файлы установщика — НЕ коммитить (содержат пароли и локальное состояние)
+setup.conf
+setup.state
+setup.log
+setup.conf.tmp
+setup.state.tmp
+*.log
