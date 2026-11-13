@@ -115,7 +115,10 @@ run_self_update() {
 	if [[ ! -f "$root/server-setup.sh" ]]; then
 		ui_error "В архиве нет server-setup.sh."; rm -rf "$tmp"; return 1
 	fi
-	local got commit; got="$(_su_version_of "$root/server-setup.sh")"; commit="${root##*-}"
+	local got commit; got="$(_su_version_of "$root/server-setup.sh")"
+	# у тега с описанием каталог в архиве назван по объекту тега, поэтому коммит спрашиваем отдельно
+	commit="$(_su_api "commits/${ref}" 2>/dev/null | grep -m1 -oE '"sha"[[:space:]]*:[[:space:]]*"[0-9a-f]{40}"' | grep -oE '[0-9a-f]{40}')"
+	[[ -n "$commit" ]] || commit="${root##*-}"
 	if [[ -n "$rv" && "$got" != "$rv" ]]; then
 		ui_error "В выпуске ${ref} внутри версия ${got:-?}, а не ${rv}. Обновление остановлено."; rm -rf "$tmp"; return 1
 	fi

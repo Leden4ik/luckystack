@@ -59,7 +59,7 @@ Apache в мастере пока скрыт. С ним ставится тол�
 ```bash
 curl -L https://github.com/Leden4ik/luckystack/archive/refs/heads/main.tar.gz | tar xz
 cd luckystack-main
-sudo ./server-setup.sh
+sudo bash server-setup.sh
 ```
 
 Откроется меню, дальше мастер спросит всё по порядку. Сначала установщик
@@ -69,7 +69,7 @@ sudo ./server-setup.sh
 который ничего не меняет:
 
 ```bash
-sudo ./server-setup.sh --dry-run
+sudo bash server-setup.sh --dry-run
 ```
 
 Сборка nginx и первая загрузка баз ClamAV идут долго, это нормально.
