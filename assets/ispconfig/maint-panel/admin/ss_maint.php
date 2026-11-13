@@ -136,7 +136,7 @@ if($tab === 'overview') {
 
 	$v = $J('versions');
 	echo '<table class="table" style="max-width:820px"><tbody>';
-	foreach(array('os', 'kernel', 'nginx', 'openssl', 'php', 'php_default', 'mariadb', 'ispconfig', 'roundcube', 'uptime') as $k) {
+	foreach(array('luckystack', 'os', 'kernel', 'nginx', 'openssl', 'php', 'php_default', 'mariadb', 'ispconfig', 'roundcube', 'uptime') as $k) {
 		if(!empty($v[$k])) echo '<tr><th style="width:240px">'.$h(_mL('ver_'.$k.'_txt')).'</th><td>'.$h($v[$k]).'</td></tr>';
 	}
 	if($g('installer_dir') !== '') echo '<tr><th>'.$h(_mL('installer_txt')).'</th><td><code>'.$h($g('installer_dir')).'</code> ('.$h($g('installer_date')).')</td></tr>';

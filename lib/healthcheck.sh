@@ -521,7 +521,7 @@ run_diagnostics() {
 	ui_header "Сбор диагностики"
 	ui_info "Собираю информацию (пароли/токены вырезаются)…"
 
-	{ echo "# LuckyStack diagnostics ${ts}"; echo "## uname"; uname -a
+	{ echo "# LuckyStack ${VERSION:-?} diagnostics ${ts}"; echo "## luckystack release"; cat "$(readlink -f "${LS_OPT_DIR:-/opt/luckystack}/current" 2>/dev/null)/.release" 2>/dev/null; echo; echo "## uname"; uname -a
 	  echo; echo "## os-release"; [[ -r /etc/os-release ]] && cat /etc/os-release
 	  echo; echo "## uptime"; uptime; echo; echo "## mem"; free -h
 	  echo; echo "## disk"; df -hT; } > "$out/system.txt" 2>&1

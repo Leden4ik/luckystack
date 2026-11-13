@@ -25,6 +25,7 @@ $wb['installer_bad_txt'] = 'Running the installer from the panel is unavailable:
 $wb['installer_txt'] = 'Installer';
 $wb['refresh_btn_txt'] = 'Refresh data';
 $wb['health_btn_txt'] = 'Check server';
+$wb['ver_luckystack_txt'] = 'LuckyStack';
 $wb['ver_os_txt'] = 'System';
 $wb['ver_kernel_txt'] = 'Kernel';
 $wb['ver_nginx_txt'] = 'nginx';

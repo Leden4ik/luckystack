@@ -18,7 +18,7 @@
 LS_KEEP_RELEASES=3
 
 # Что из каталога с кодом входит в выпуск. Настройки, состояние и журнал сюда не попадают.
-LS_CODE_ITEMS=(server-setup.sh luckyctl lib assets lang DOCUMENTATION.md GETTING-STARTED.md README.md)
+LS_CODE_ITEMS=(server-setup.sh luckyctl lib assets lang DOCUMENTATION.md GETTING-STARTED.md README.md CHANGELOG.md LICENSE)
 
 _ls_real() { readlink -f -- "$1" 2>/dev/null; }
 
@@ -56,16 +56,19 @@ ls_make_dirs() {
 	install -d -m 700 -o root -g root "$LS_ETC_DIR" "$LS_VAR_DIR" "$LS_LOG_DIR" || return 1
 }
 
-# ls_install_code SRC — скопировать код из SRC новым выпуском и переключить current.
+# ls_install_code SRC [ИСТОЧНИК] — скопировать код из SRC новым выпуском и переключить current.
+# Выпуск называется по версии (releases/0.1.0); если такой уже есть, к имени добавляется время.
+# В выпуск пишется .release: версия, откуда взят код и когда поставлен (видно в luckyctl version).
 # Печатает путь выпуска. Прежний выпуск остаётся для отката.
 ls_install_code() {
-	local src="$1" ts name rel tmp it
+	local src="$1" origin="${2:-локальная копия}" ts ver name rel tmp it
 	[[ -f "$src/server-setup.sh" && -d "$src/lib" ]] || { ui_error "В ${src} нет server-setup.sh и lib/."; return 1; }
 	bash -n "$src/server-setup.sh" 2>>"${SETUP_LOG:-/dev/null}" || { ui_error "server-setup.sh в ${src} не проходит проверку синтаксиса."; return 1; }
 	ls_make_dirs || { ui_error "Не удалось создать каталоги ${LS_OPT_DIR}, ${LS_ETC_DIR}, ${LS_VAR_DIR}, ${LS_LOG_DIR}."; return 1; }
 	ts="$(date +%Y%m%d-%H%M%S)"
-	name="$(grep -m1 -oE 'VERSION="[^"]+"' "$src/server-setup.sh" | cut -d'"' -f2)"
-	name="${name:-0}-${ts}"
+	ver="$(grep -m1 -oE 'VERSION="[^"]+"' "$src/server-setup.sh" | cut -d'"' -f2)"
+	name="${ver:-0}"
+	[[ -e "$LS_OPT_DIR/releases/$name" ]] && name="${name}-${ts}"
 	rel="$LS_OPT_DIR/releases/$name"; tmp="$rel.tmp"
 	rm -rf -- "$tmp"; mkdir -m 755 -- "$tmp" || return 1
 	for it in "${LS_CODE_ITEMS[@]}"; do
@@ -80,6 +83,8 @@ ls_install_code() {
 	find "$tmp" -type d -exec chmod 755 {} +
 	find "$tmp" -type f -exec chmod go-w,u+rw {} +
 	chmod 755 "$tmp/server-setup.sh"; [[ -f "$tmp/luckyctl" ]] && chmod 755 "$tmp/luckyctl"
+	printf "VERSION='%s'\nORIGIN='%s'\nINSTALLED='%s'\n" "${ver:-?}" "${origin//\'/}" "$(date '+%F %T')" >"$tmp/.release"
+	chmod 644 "$tmp/.release"
 	mv -T -- "$tmp" "$rel" || { rm -rf -- "$tmp"; return 1; }
 	ln -sfn "releases/$name" "$LS_OPT_DIR/current.new" && mv -Tf "$LS_OPT_DIR/current.new" "$LS_OPT_DIR/current" \
 		|| { ui_error "Не удалось переключить ${LS_OPT_DIR}/current."; return 1; }
@@ -142,7 +147,7 @@ ls_guard_code_location() {
 	[[ $EUID -eq 0 ]] || return 0
 	local rel
 	if ((DO_INSTALL_CODE)); then
-		rel="$(ls_install_code "$SCRIPT_DIR")" || return 1
+		rel="$(ls_install_code "$SCRIPT_DIR" "копия из ${SCRIPT_DIR}")" || return 1
 		ls_install_cli
 		_ls_refresh_maint_sync
 		ls_update_maint_conf
@@ -155,7 +160,7 @@ ls_guard_code_location() {
 		# ставим на место и продолжаем уже оттуда.
 		(( ${_modes:-0} == 0 )) || return 0
 		ui_step "Установка кода LuckyStack в ${LS_OPT_DIR}"
-		rel="$(ls_install_code "$SCRIPT_DIR")" || return 1
+		rel="$(ls_install_code "$SCRIPT_DIR" "копия из ${SCRIPT_DIR}")" || return 1
 		ls_install_cli
 		ui_success "Код установлен: ${rel}. Команда luckyctl готова."
 		export LS_REEXEC=1

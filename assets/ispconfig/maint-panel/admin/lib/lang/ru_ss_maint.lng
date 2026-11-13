@@ -25,6 +25,7 @@ $wb['installer_bad_txt'] = 'Запуск установщика из панел�
 $wb['installer_txt'] = 'Установщик';
 $wb['refresh_btn_txt'] = 'Обновить сведения';
 $wb['health_btn_txt'] = 'Проверить сервер';
+$wb['ver_luckystack_txt'] = 'LuckyStack';
 $wb['ver_os_txt'] = 'Система';
 $wb['ver_kernel_txt'] = 'Ядро';
 $wb['ver_nginx_txt'] = 'nginx';

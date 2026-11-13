@@ -56,7 +56,7 @@ if [[ $EUID -eq 0 ]]; then
 	install -d -m 700 -o root -g root "$LS_ETC_DIR" "$LS_VAR_DIR" "$LS_LOG_DIR" 2>/dev/null || true
 fi
 
-VERSION="0.1.0-M1"
+VERSION="0.1.0"
 
 # --- Флаги -------------------------------------------------------------------
 DRY_RUN=0          # этапы-заглушки имитируют работу, без изменений в системе

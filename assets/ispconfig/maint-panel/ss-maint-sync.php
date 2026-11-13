@@ -203,7 +203,10 @@ function mm_collect() {
 	mm_set('installer_date', ($dir !== '' && is_file($dir.'/server-setup.sh')) ? date('Y-m-d H:i', filemtime($dir.'/server-setup.sh')) : '');
 
 	$v = array();
-	$v['os'] = mm_sh(". /etc/os-release; echo \"\$PRETTY_NAME\"");
+	// версия LuckyStack из рабочего выпуска (VERSION="…" в server-setup.sh)
+	$v['luckystack'] = ($dir !== '' && is_file($dir.'/server-setup.sh')
+		&& preg_match('/^VERSION="([^"]+)"/m', (string)file_get_contents($dir.'/server-setup.sh'), $m)) ? $m[1] : '';
+	$v['os'] =mm_sh(". /etc/os-release; echo \"\$PRETTY_NAME\"");
 	$v['kernel'] = mm_sh('uname -r');
 	$nv = mm_sh('nginx -V 2>&1');
 	$v['nginx'] = preg_match('#nginx/([0-9.]+)#', $nv, $m) ? $m[1] : '';

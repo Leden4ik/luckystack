@@ -163,8 +163,9 @@ case "$cmd" in
 		echo "Выпуски:    $LS_OPT_DIR/releases" ;;
 
 	version|--version|-V)
+		# root: что стоит, откуда взято и есть ли новый выпуск; остальным только номер
+		if [[ $EUID -eq 0 ]]; then "$SS" --check-update; exit 0; fi
 		echo "LuckyStack $(version_of "$SS") ($(readlink -f -- "$CODE_DIR"))"
-		[[ $EUID -eq 0 ]] && "$SS" --check-update 2>/dev/null | grep -vE '^\s*$' | tail -n 3
 		exit 0 ;;
 
 	*) echo "Неизвестная команда: $cmd" >&2; echo "Список команд: luckyctl help" >&2; exit 2 ;;
