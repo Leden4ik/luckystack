@@ -183,11 +183,18 @@ stage_preflight() {
 					sed -i "${n}s/^/# luckystack: другое имя сервера, заменено на ${fqdn}: /" /etc/hosts
 				done
 			fi
-			if ! awk -v f="$fqdn" '/^[[:space:]]*#/ {next} { for (i = 2; i <= NF; i++) if ($i == f) found = 1 } END { exit !found }' /etc/hosts 2>/dev/null; then
+			# Нужна строка, где есть и полное, и короткое имя: hostname -f ищет короткое и берёт
+			# первое имя этой строки. Шаблоны хостеров пишут полное имя с чужим коротким
+			# («ad-srb.example.net d-srb») или без него, тогда hostname -f не работает вовсе,
+			# а Postfix и make-ssl-cert при установке получают короткое имя.
+			if ! awk -v f="$fqdn" -v s="$short" '/^[[:space:]]*#/ {next}
+					{ hf = 0; hs = 0; for (i = 2; i <= NF; i++) { if ($i == f) hf = 1; if ($i == s) hs = 1 } if (hf && hs) found = 1 }
+					END { exit !found }' /etc/hosts 2>/dev/null; then
+				[[ -f /etc/hosts.luckystack.bak ]] || cp -a /etc/hosts /etc/hosts.luckystack.bak
 				printf '%s %s %s\n' "$main_ip" "$fqdn" "$short" >>/etc/hosts
 				ui_success "В /etc/hosts добавлено: ${main_ip} ${fqdn} ${short}"
 			else
-				ui_info "/etc/hosts уже содержит ${fqdn}"
+				ui_info "/etc/hosts уже содержит ${fqdn} ${short}"
 			fi
 			local got; got="$(hostname -f 2>/dev/null)"
 			[[ "$got" == "$fqdn" ]] || ui_warn "hostname -f отвечает «${got}», а должно быть ${fqdn}: проверьте /etc/hosts."
