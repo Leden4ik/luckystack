@@ -1,0 +1,1344 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="LuckyStack: установщик и сопровождение сервера хостинга на ISPConfig. nginx с HTTP/3, PHP нескольких версий, MariaDB, почта, защита и бэкапы.">
+<style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+
+<title>LuckyStack</title>
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Документация: верхняя полоса, слева оглавление, справа текст. Тема прежняя: ночное небо и пульт. */
+:root {
+  --bg: #0a0f1e; --panel: #111832; --panel-2: #0e1530; --line: #24305a; --fg: #e8ecf8; --muted: #9aa5c7;
+  --accent: #ffb347; --accent-ink: #1a1206; --cool: #7fd3ff; --ok: #6fdc9a; --warn: #ffcf66; --bad: #ff7b7b;
+  --term: #070b17; --term-fg: #d7def5; --star: 255, 255, 255;
+  --ui-bg: #121a36; --ui-bar: #0c1330; --ui-head: #18224a; --ui-line: #2a3666; --ui-fg: #e3e8f7; --ui-muted: #98a3c6; --ui-btn: #2f6fd6;
+  --display: "Unbounded", "Segoe UI", system-ui, sans-serif;
+  --body: "Golos Text", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f2f4fa; --panel: #ffffff; --panel-2: #f7f8fc; --line: #d5dbee; --fg: #141a33; --muted: #56607f;
+    --accent: #c86a00; --accent-ink: #ffffff; --cool: #0a6fa8; --ok: #17834a; --warn: #9a6a00; --bad: #c03030;
+    --term: #121a35; --term-fg: #e6ebfb; --star: 20, 30, 70;
+    --ui-bg: #ffffff; --ui-bar: #2b3a67; --ui-head: #f1f3f9; --ui-line: #dde2ef; --ui-fg: #1d2440; --ui-muted: #66708f; --ui-btn: #2f6fd6;
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f2f4fa; --panel: #ffffff; --panel-2: #f7f8fc; --line: #d5dbee; --fg: #141a33; --muted: #56607f;
+  --accent: #c86a00; --accent-ink: #ffffff; --cool: #0a6fa8; --ok: #17834a; --warn: #9a6a00; --bad: #c03030;
+  --term: #121a35; --term-fg: #e6ebfb; --star: 20, 30, 70;
+  --ui-bg: #ffffff; --ui-bar: #2b3a67; --ui-head: #f1f3f9; --ui-line: #dde2ef; --ui-fg: #1d2440; --ui-muted: #66708f; --ui-btn: #2f6fd6;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --bg: #0a0f1e; --panel: #111832; --panel-2: #0e1530; --line: #24305a; --fg: #e8ecf8; --muted: #9aa5c7;
+  --accent: #ffb347; --accent-ink: #1a1206; --cool: #7fd3ff; --ok: #6fdc9a; --warn: #ffcf66; --bad: #ff7b7b;
+  --term: #070b17; --term-fg: #d7def5; --star: 255, 255, 255;
+  --ui-bg: #121a36; --ui-bar: #0c1330; --ui-head: #18224a; --ui-line: #2a3666; --ui-fg: #e3e8f7; --ui-muted: #98a3c6; --ui-btn: #2f6fd6;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 400 16.5px/1.7 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+#sky { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+.wrap { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; }
+a { color: var(--cool); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+h1, h2, h3, h4 { font-family: var(--display); font-weight: 700; text-wrap: balance; line-height: 1.2; margin: 0; }
+h2 { font-size: clamp(1.4rem, 3vw, 1.9rem); }
+h3 { font-size: 1.08rem; font-weight: 500; margin-top: 34px; }
+h4 { font-family: var(--body); font-size: 1rem; font-weight: 600; margin-top: 22px; }
+p { margin: 12px 0 0; }
+ul, ol { margin: 12px 0 0; padding-left: 1.3em; }
+li { margin-top: 6px; }
+li::marker { color: var(--muted); }
+code, kbd { font-family: var(--mono); font-size: .86em; }
+:not(pre) > code { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; white-space: nowrap; }
+.label { font: 600 .72rem/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+
+/* верхняя полоса */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+header.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding-block: 14px; margin-inline: -16px; padding-inline: 16px;
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; align-items: center; gap: 11px; text-decoration: none; color: var(--fg); }
+.brand svg { flex: none; }
+.brand b { font: 700 1rem/1 var(--display); letter-spacing: .02em; }
+.brand small { font: 600 .7rem/1 var(--mono); color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 4px 8px; }
+.top-right { display: flex; gap: 10px; align-items: center; }
+.switch, .menu-btn {
+  font: 600 .74rem/1 var(--mono); letter-spacing: .08em; text-transform: uppercase;
+  background: var(--panel); color: var(--fg); border: 1px solid var(--line);
+  border-radius: 999px; padding: 8px 13px; cursor: pointer;
+}
+.menu-btn { display: none; }
+
+/* раскладка */
+.layout { display: grid; grid-template-columns: 236px minmax(0, 1fr); gap: 48px; }
+aside.toc { position: sticky; top: 76px; align-self: start; max-height: calc(100vh - 92px); overflow-y: auto; padding: 26px 4px 30px 0; }
+.toc .group { margin-top: 20px; }
+.toc .group:first-child { margin-top: 0; }
+.toc .label { display: block; margin-bottom: 8px; }
+.toc a { display: block; color: var(--muted); text-decoration: none; padding: 4px 10px; border-left: 2px solid var(--line); font-size: .93rem; line-height: 1.45; }
+.toc a:hover { color: var(--fg); }
+.toc a.on { color: var(--fg); border-left-color: var(--accent); background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 12%, transparent), transparent); }
+main { min-width: 0; max-width: 820px; padding-bottom: 60px; }
+
+.draft { margin-top: 26px; padding: 10px 14px; border: 1px dashed var(--line); border-radius: 10px; color: var(--muted); font-size: .9rem; }
+
+section.doc { padding-top: 56px; }
+section.doc > .eyebrow { display: block; margin-bottom: 10px; color: var(--accent); }
+section.doc > h2 + p { color: var(--muted); font-size: 1.05rem; }
+
+/* вступление */
+.hero { padding-top: 34px; }
+.hero h1 { font-size: clamp(2.3rem, 6vw, 3.8rem); letter-spacing: -.01em; }
+.hero h1 span { color: var(--accent); }
+.lead { margin-top: 16px; font-size: 1.15rem; color: var(--muted); max-width: 46ch; }
+.lead strong { color: var(--fg); font-weight: 500; }
+.cmd { margin-top: 10px; display: flex; align-items: stretch; border-radius: 12px; overflow: hidden; background: var(--term); border: 1px solid var(--line); }
+.cmd pre { margin: 0; padding: 13px 16px; overflow-x: auto; flex: 1; min-width: 0; color: var(--term-fg); font: 400 .9rem/1.5 var(--mono); }
+.cmd pre .p { color: var(--accent); user-select: none; }
+.copy { flex: none; border: 0; border-left: 1px solid var(--line); background: transparent; color: var(--term-fg); font: 600 .74rem/1 var(--mono); letter-spacing: .06em; padding: 0 15px; cursor: pointer; }
+.copy:hover { background: rgba(255, 255, 255, .06); }
+.install { margin-top: 26px; }
+
+.facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin-top: 30px; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--panel); }
+.facts div { padding: 16px 18px; border-left: 1px solid var(--line); }
+.facts div:first-child { border-left: 0; }
+.facts b { display: block; font: 500 .98rem/1.3 var(--display); }
+.facts p { margin-top: 6px; font-size: .9rem; color: var(--muted); line-height: 1.5; }
+
+/* выноски */
+.callout { margin-top: 18px; padding: 13px 16px 13px 18px; border-radius: 10px; border: 1px solid var(--line); border-left: 3px solid var(--cool); background: var(--panel); font-size: .95rem; }
+.callout p:first-child { margin-top: 0; }
+.callout.warn { border-left-color: var(--accent); }
+.callout.plan { border-left-color: var(--muted); border-style: dashed; border-left-style: solid; }
+.callout b.t { display: block; font-weight: 600; margin-bottom: 2px; }
+
+/* код и терминал */
+pre.code, .screen pre {
+  margin: 0; overflow-x: auto; font: 400 .84rem/1.55 var(--mono); color: var(--term-fg); tab-size: 4;
+}
+pre.code { margin-top: 14px; background: var(--term); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.c { color: #7d89b3; }
+.k { color: var(--accent); }
+:root[data-theme="light"] .k { color: #ffb347; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .k { color: #ffb347; } }
+.s { color: #9ee6b4; }
+
+.screen { margin-top: 18px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--term); }
+.screen .bar { display: flex; align-items: center; gap: 7px; padding: 9px 12px; border-bottom: 1px solid rgba(255, 255, 255, .08); }
+.screen .bar i { width: 10px; height: 10px; border-radius: 50%; background: rgba(255, 255, 255, .16); }
+.screen .bar span { margin-left: 8px; font: 400 .76rem/1 var(--mono); color: #8d97bd; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.screen pre { padding: 14px 16px 16px; font-size: .8rem; line-height: 1.5; }
+.screen .t-ok { color: #6fdc9a; }
+.screen .t-warn { color: #ffcf66; }
+.screen .t-bad { color: #ff7b7b; }
+.screen .t-i { color: #7fd3ff; }
+.screen .t-step { color: #ffb347; }
+.screen .t-dim { color: #7d89b3; }
+.screen .t-b { color: #ffffff; font-weight: 600; }
+figure { margin: 0; }
+figcaption { margin-top: 8px; font-size: .85rem; color: var(--muted); }
+
+/* таблицы */
+.tbl { margin-top: 16px; border: 1px solid var(--line); border-radius: 12px; overflow-x: auto; background: var(--panel); }
+.tbl table { border-collapse: collapse; width: 100%; font-size: .9rem; min-width: 560px; }
+.tbl th { text-align: left; font: 600 .72rem/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 11px 14px; border-bottom: 1px solid var(--line); background: var(--panel-2); }
+.tbl td { padding: 10px 14px; border-top: 1px solid var(--line); vertical-align: top; line-height: 1.5; }
+.tbl tr:first-child td { border-top: 0; }
+.tbl td.m { font-family: var(--mono); font-size: .82rem; white-space: nowrap; color: var(--accent); }
+.tbl td.n { font-family: var(--mono); font-size: .82rem; color: var(--muted); white-space: nowrap; }
+.tag { display: inline-block; font: 600 .68rem/1 var(--mono); letter-spacing: .05em; padding: 4px 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.tag.core { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.tag.yes { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 45%, var(--line)); }
+.tag.plan { border-style: dashed; }
+
+/* шаги */
+.steps { list-style: none; padding: 0; margin: 20px 0 0; counter-reset: s; }
+.steps > li { counter-increment: s; position: relative; padding: 0 0 26px 52px; margin: 0; }
+.steps > li::before { content: counter(s); position: absolute; left: 0; top: -2px; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font: 600 .85rem/1 var(--mono); color: var(--accent-ink); background: var(--accent); }
+.steps > li::after { content: ""; position: absolute; left: 16.5px; top: 38px; bottom: 6px; width: 1px; background: var(--line); }
+.steps > li:last-child::after { display: none; }
+.steps > li > b { font: 500 1.02rem/1.4 var(--display); display: block; }
+.steps > li > p:first-of-type { margin-top: 6px; }
+
+/* сетка карточек */
+.cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 15px 17px; }
+.card b { font-weight: 600; }
+.card p { margin-top: 6px; font-size: .92rem; color: var(--muted); line-height: 1.55; }
+.card .where { margin-top: 10px; }
+
+.crumb { display: inline-flex; flex-wrap: wrap; gap: 4px; align-items: center; font: 500 .8rem/1 var(--mono); }
+.crumb span { background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 4px 7px; white-space: nowrap; }
+.crumb em { font-style: normal; color: var(--muted); }
+
+/* поток обновления */
+.flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 18px; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.flow div { padding: 16px; background: var(--panel); border-left: 1px solid var(--line); }
+.flow div:first-child { border-left: 0; }
+.flow b { display: block; margin-top: 6px; font: 500 .96rem/1.3 var(--display); }
+.flow p { margin-top: 6px; color: var(--muted); font-size: .88rem; line-height: 1.5; }
+
+/* макет окна панели ISPConfig */
+.mock { margin-top: 20px; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--ui-bg); color: var(--ui-fg); font-size: .86rem; line-height: 1.5; box-shadow: 0 18px 50px -24px rgba(0, 0, 0, .55); }
+.mock .chrome { display: flex; align-items: center; gap: 7px; padding: 9px 12px; background: var(--term); border-bottom: 1px solid var(--line); }
+.mock .chrome i { width: 10px; height: 10px; border-radius: 50%; background: rgba(255, 255, 255, .16); }
+.mock .chrome span { margin-left: 8px; flex: 1; min-width: 0; font: 400 .74rem/1 var(--mono); color: #8d97bd; background: rgba(255, 255, 255, .06); border-radius: 6px; padding: 6px 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mock .appbar { display: flex; gap: 16px; align-items: center; padding: 9px 14px; background: var(--ui-bar); color: #e7ecff; font-size: .8rem; overflow-x: auto; white-space: nowrap; }
+.mock .appbar b { font-weight: 600; margin-right: 8px; }
+.mock .appbar span { opacity: .7; }
+.mock .appbar span.on { opacity: 1; border-bottom: 2px solid #ffb347; padding-bottom: 2px; }
+.mock .body { display: grid; grid-template-columns: 190px minmax(0, 1fr); min-height: 300px; }
+.mock .side { border-right: 1px solid var(--ui-line); padding: 12px 0; background: var(--ui-head); }
+.mock .side div { padding: 3px 14px; color: var(--ui-muted); font-size: .8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mock .side div.h { color: var(--ui-fg); font-weight: 600; margin-top: 10px; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; }
+.mock .side div.h:first-child { margin-top: 0; }
+.mock .side div.on { color: var(--ui-fg); background: color-mix(in srgb, var(--ui-btn) 22%, transparent); border-left: 3px solid var(--ui-btn); padding-left: 11px; }
+.mock .side div.ours { color: var(--ui-fg); }
+.mock .content { padding: 14px 16px 18px; min-width: 0; }
+.mock h5 { margin: 0; font: 600 1rem/1.3 var(--body); }
+.mock .tabs { display: flex; gap: 2px; margin-top: 12px; border-bottom: 1px solid var(--ui-line); overflow-x: auto; }
+.mock .tabs button { font: 500 .8rem/1 var(--body); background: transparent; color: var(--ui-muted); border: 1px solid transparent; border-bottom: 0; padding: 9px 12px; border-radius: 8px 8px 0 0; cursor: pointer; white-space: nowrap; }
+.mock .tabs button[aria-selected="true"] { color: var(--ui-fg); background: var(--ui-head); border-color: var(--ui-line); }
+.mock .pane { padding-top: 14px; }
+.mock .pane[hidden] { display: none; }
+.mock .kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 18px; }
+.mock .kv dt { color: var(--ui-muted); }
+.mock .kv dd { margin: 0; font-family: var(--mono); font-size: .78rem; }
+.mock .chk { margin-top: 14px; }
+.mock .chk div { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 8px; align-items: start; padding: 6px 0; border-top: 1px solid var(--ui-line); }
+.mock .chk div:first-child { border-top: 0; }
+.mock .ico { font: 700 .8rem/1.5 var(--mono); }
+.mock .ico.ok { color: var(--ok); }
+.mock .ico.warn { color: var(--warn); }
+.mock .fix { font: 500 .72rem/1 var(--body); color: var(--ui-btn); border: 1px solid color-mix(in srgb, var(--ui-btn) 50%, var(--ui-line)); background: transparent; border-radius: 6px; padding: 5px 8px; white-space: nowrap; }
+.mock .btn { display: inline-block; font: 600 .78rem/1 var(--body); color: #fff; background: var(--ui-btn); border-radius: 7px; padding: 9px 13px; }
+.mock .btn.ghost { color: var(--ui-fg); background: transparent; border: 1px solid var(--ui-line); }
+.mock .sub { margin-top: 16px; font-weight: 600; font-size: .82rem; }
+.mock .opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 18px; margin-top: 8px; }
+.mock .opt { display: flex; gap: 8px; align-items: flex-start; font-size: .82rem; }
+.mock .box { flex: none; width: 15px; height: 15px; margin-top: 3px; border-radius: 4px; border: 1.5px solid var(--ui-muted); display: grid; place-items: center; font: 700 .65rem/1 var(--mono); }
+.mock .box.on { background: var(--ui-btn); border-color: var(--ui-btn); color: #fff; }
+.mock .opt small { display: block; color: var(--ui-muted); font-size: .74rem; line-height: 1.4; }
+.mock .row { display: grid; grid-template-columns: minmax(0, 1fr) 150px; gap: 12px; align-items: center; padding: 8px 0; border-top: 1px solid var(--ui-line); }
+.mock .row:first-of-type { border-top: 0; }
+.mock .sel { font: 400 .78rem/1 var(--mono); border: 1px solid var(--ui-line); border-radius: 6px; padding: 7px 9px; background: var(--ui-head); display: flex; justify-content: space-between; }
+.mock table { border-collapse: collapse; width: 100%; font-size: .78rem; margin-top: 8px; }
+.mock th { text-align: left; font-weight: 600; color: var(--ui-muted); padding: 6px 8px; border-bottom: 1px solid var(--ui-line); white-space: nowrap; }
+.mock td { padding: 6px 8px; border-bottom: 1px solid var(--ui-line); vertical-align: top; }
+.mock td.mono { font-family: var(--mono); font-size: .74rem; white-space: nowrap; }
+.mock .st { font: 600 .7rem/1 var(--mono); padding: 3px 6px; border-radius: 5px; }
+.mock .st.done { color: var(--ok); background: color-mix(in srgb, var(--ok) 14%, transparent); }
+.mock .st.err { color: var(--bad); background: color-mix(in srgb, var(--bad) 14%, transparent); }
+.mock .scroll { overflow-x: auto; }
+.mock .counts { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 4px; font-size: .8rem; color: var(--ui-muted); }
+.mock .counts b { font-family: var(--mono); color: var(--ui-fg); }
+.mock .note { margin-top: 12px; font-size: .78rem; color: var(--ui-muted); }
+.mock-cap { display: flex; gap: 8px; align-items: baseline; margin-top: 8px; font-size: .85rem; color: var(--muted); }
+
+/* сообщение в Telegram */
+.chat { margin-top: 18px; display: grid; gap: 10px; max-width: 460px; padding: 16px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel-2); }
+.bubble { background: var(--panel); border: 1px solid var(--line); border-radius: 14px 14px 14px 4px; padding: 10px 13px; font-size: .88rem; line-height: 1.5; white-space: pre-line; }
+.bubble.me { justify-self: end; border-radius: 14px 14px 4px 14px; background: color-mix(in srgb, var(--cool) 16%, var(--panel)); font-family: var(--mono); font-size: .82rem; }
+.bubble small { display: block; text-align: right; color: var(--muted); font-size: .7rem; margin-top: 2px; }
+
+/* раскладка файлов */
+.tree { margin-top: 14px; font: 400 .84rem/1.7 var(--mono); background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; overflow-x: auto; white-space: pre; }
+.tree .c { color: var(--muted); }
+
+details.qa { border-top: 1px solid var(--line); padding-block: 13px; }
+details.qa:last-of-type { border-bottom: 1px solid var(--line); }
+details.qa summary { cursor: pointer; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+details.qa summary::-webkit-details-marker { display: none; }
+details.qa summary::after { content: "+"; font-family: var(--mono); color: var(--accent); }
+details.qa[open] summary::after { content: "\2212"; }
+details.qa > div { color: var(--muted); }
+
+footer { margin-top: 64px; padding: 22px 0 40px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 12px 28px; justify-content: space-between; color: var(--muted); font-size: .9rem; }
+
+@media (max-width: 980px) {
+  .layout { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  aside.toc { display: none; position: fixed; top: 64px; left: 0; right: 0; max-height: calc(100vh - 64px); z-index: 4; background: var(--bg); border-bottom: 1px solid var(--line); padding: 18px max(16px, env(safe-area-inset-left, 0px)) 24px; }
+  aside.toc.open { display: block; }
+  .menu-btn { display: inline-block; }
+  main { max-width: none; }
+}
+@media (max-width: 700px) {
+  body { font-size: 16px; }
+  .facts { grid-template-columns: 1fr; }
+  .facts div { border-left: 0; border-top: 1px solid var(--line); }
+  .facts div:first-child { border-top: 0; }
+  .cards { grid-template-columns: 1fr; }
+  .flow { grid-template-columns: 1fr 1fr; }
+  .flow div:nth-child(3) { border-left: 0; }
+  .flow div:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .mock .body { grid-template-columns: 1fr; }
+  .mock .side { display: none; }
+  .mock .opts { grid-template-columns: 1fr; }
+  .mock .row { grid-template-columns: 1fr; gap: 6px; }
+  .brand small { display: none; }
+  .switch { padding: 8px 10px; }
+}
+@media (max-width: 440px) {
+  .flow { grid-template-columns: 1fr; }
+  .flow div { border-left: 0; border-top: 1px solid var(--line); }
+  .flow div:first-child { border-top: 0; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+
+<canvas id="sky" aria-hidden="true"></canvas>
+<div class="wrap">
+
+<header class="top">
+  <a class="brand" href="#intro" aria-label="LuckyStack, к началу">
+    <svg width="30" height="30" viewBox="0 0 34 34" aria-hidden="true">
+      <circle cx="17" cy="17" r="15" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+      <ellipse cx="17" cy="17" rx="15" ry="6" fill="none" stroke="var(--cool)" stroke-width="1.3" transform="rotate(-24 17 17)"/>
+      <circle cx="17" cy="17" r="5" fill="var(--accent)"/>
+      <circle cx="29.5" cy="11.2" r="2" fill="var(--fg)"/>
+    </svg>
+    <b>LuckyStack</b><small>документация · 0.1</small>
+  </a>
+  <div class="top-right">
+    <button class="menu-btn" id="menu" type="button" aria-expanded="false" aria-controls="toc">Содержание</button>
+    <button class="switch" id="theme" type="button">День / ночь</button>
+  </div>
+</header>
+
+<div class="layout">
+<aside class="toc" id="toc" aria-label="Содержание">
+  <div class="group"><span class="label">Начало</span>
+    <a href="#intro">Что такое LuckyStack</a>
+    <a href="#quickstart">Быстрый старт</a>
+    <a href="#requirements">Требования</a>
+  </div>
+  <div class="group"><span class="label">Установка</span>
+    <a href="#wizard">Мастер установки</a>
+    <a href="#stages">Этапы</a>
+    <a href="#unattended">Установка без вопросов</a>
+  </div>
+  <div class="group"><span class="label">Работа с сервером</span>
+    <a href="#cli">Команда luckyctl</a>
+    <a href="#panel">Панель Дополнения</a>
+    <a href="#updates">Обновления</a>
+    <a href="#rollback">Откат</a>
+  </div>
+  <div class="group"><span class="label">Защита и данные</span>
+    <a href="#security">Безопасность</a>
+    <a href="#backup">Бэкапы</a>
+    <a href="#notify">Уведомления и бот</a>
+  </div>
+  <div class="group"><span class="label">Справочник</span>
+    <a href="#config">Настройки setup.conf</a>
+    <a href="#files">Файлы и журналы</a>
+    <a href="#trouble">Решение проблем</a>
+    <a href="#faq">Вопросы</a>
+    <a href="#roadmap">Что дальше</a>
+  </div>
+</aside>
+
+<main>
+  <!-- ВВЕДЕНИЕ -->
+  <section class="doc hero" id="intro">
+    <h1>Lucky<span>Stack</span></h1>
+    <p class="lead">Готовый веб- и почтовый сервер на <strong>nginx, PHP и ISPConfig</strong>. Ставится мастером на чистый Debian или Ubuntu, дальше обслуживается из панели или командой luckyctl.</p>
+
+    <div class="install">
+      <span class="label">Установка на чистый сервер, от root</span>
+      <div class="cmd">
+        <pre id="cmd-install">curl -L https://github.com/Leden4ik/luckystack/archive/refs/heads/main.tar.gz | tar xz
+cd luckystack-main
+bash server-setup.sh</pre>
+        <button class="copy" type="button" data-copy="cmd-install">Копировать</button>
+      </div>
+      <p class="muted" style="font-size:.9rem">Исходный код и выпуски: <a href="https://github.com/Leden4ik/luckystack">github.com/Leden4ik/luckystack</a></p>
+    </div>
+
+    <p>ISPConfig хорошая панель, но после её установки сервер ещё далёк от готового. nginx из пакетов без HTTP/3 и Brotli, почта принимает пароли открытым текстом, firewall не настроен, бэкапа нет, а обновление панели затирает ручные правки. LuckyStack закрывает всё это: собирает nginx, ставит PHP нескольких версий, почту с антиспамом, защиту, бэкапы и уведомления, а в ISPConfig добавляет группу пунктов меню Дополнения, из которой всё это видно и можно обслуживать.</p>
+    <p>Я делал его для своих серверов и обкатываю на них же. Каждое изменение сначала проходит тестовый сервер и только потом попадает на рабочий.</p>
+
+    <div class="facts">
+      <div><b>Мастер с умолчаниями</b><p>Можно пройти одним Enter: имя сервера, порт SSH и профиль подставляются сами. Сбой на этапе не губит установку, её можно продолжить.</p></div>
+      <div><b>Панель вместо SSH</b><p>Версии, проверки, обновление, откат, бэкапы, баны и уведомления в ISPConfig.</p></div>
+      <div><b>Обновления без страха</b><p>Перед ядром бэкап, после ядра наши правки накладываются заново, nginx и вебмейл откатываются одной командой.</p></div>
+    </div>
+
+    <h3>Что получается на сервере</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>Часть</th><th>Что стоит</th><th>Откуда</th></tr></thead>
+      <tbody>
+        <tr><td>Веб-сервер</td><td>nginx с HTTP/3, Brotli, zstd и OpenSSL 3.5 LTS. Полноценный Apache будет в следующем выпуске</td><td class="n">сборка</td></tr>
+        <tr><td>PHP</td><td>Несколько версий FPM сразу, от 7.4 до 8.5, версия выбирается у каждого сайта</td><td class="n">Sury</td></tr>
+        <tr><td>Базы</td><td>MariaDB последней LTS, Redis. По желанию PostgreSQL</td><td class="n">mariadb.org</td></tr>
+        <tr><td>Почта</td><td>Postfix и Dovecot, Rspamd и ClamAV, вебмейл Roundcube, DKIM, SPF и DMARC</td><td class="n">apt / roundcube.net</td></tr>
+        <tr><td>Панель</td><td>ISPConfig 3.3 и группа Дополнения: 10 наших пунктов меню</td><td class="n">ispconfig.org</td></tr>
+        <tr><td>Защита</td><td>CrowdSec с ufw, fail2ban, харденинг SSH, ядра и PHP, проверка на вредоносный код</td><td class="n">apt</td></tr>
+        <tr><td>Сертификаты</td><td>Let's Encrypt для сайтов, панели и почты, продление само</td><td class="n">acme.sh</td></tr>
+        <tr><td>Сопровождение</td><td>Ежедневный бэкап, уведомления на почту и в Telegram, проверка здоровья</td><td class="n">свои скрипты</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- БЫСТРЫЙ СТАРТ -->
+  <section class="doc" id="quickstart">
+    <span class="label eyebrow">Начало</span>
+    <h2>Быстрый старт</h2>
+    <p>От пустого сервера до работающей панели. Дольше всего идёт сборка nginx, остальное ставится из пакетов.</p>
+
+    <ol class="steps">
+      <li><b>Подготовьте имя сервера</b>
+        <p>Выберите полное имя, например <code>server.example.com</code>, и создайте у регистратора A-запись на IP сервера. По этому имени будет открываться панель, на него выпускается сертификат и с него уходит почта. Проверить, что запись уже работает:</p>
+        <pre class="code"><span class="c"># на своём компьютере</span>
+dig +short server.example.com
+<span class="s">203.0.113.10</span></pre>
+      </li>
+      <li><b>Зайдите на сервер по SSH ключом</b>
+        <p>Мастер предложит закрыть вход по паролю, поэтому ключ лучше положить заранее. Если ключа нет, создайте его командой <code>ssh-keygen -t ed25519</code> и передайте на сервер через <code>ssh-copy-id root@203.0.113.10</code>.</p>
+      </li>
+      <li><b>Запустите установку</b>
+        <div class="cmd"><pre id="cmd-install-2">curl -L https://github.com/Leden4ik/luckystack/archive/refs/heads/main.tar.gz | tar xz
+cd luckystack-main
+bash server-setup.sh</pre><button class="copy" type="button" data-copy="cmd-install-2">Копировать</button></div>
+        <p>Команды скачивают код с GitHub и запускают мастер. Перед этим его можно спокойно прочитать: это обычные bash-скрипты. При первом запуске установщик копирует себя в <code>/opt/luckystack</code>, ставит команду <code>luckyctl</code> и дальше работает уже оттуда, скачанную папку можно удалить.</p>
+      </li>
+      <li><b>Ответьте на вопросы мастера</b>
+        <p>Почти везде можно просто нажимать Enter, значение по умолчанию подходит большинству. Подробно про каждый вопрос в разделе <a href="#wizard">Мастер установки</a>.</p>
+      </li>
+      <li><b>Откройте панель</b>
+        <p>В конце мастер покажет адрес панели и пароль администратора, а копию доступов положит в <code>/root/server-access.txt</code>. Панель открывается по имени сервера, порт выбирается в мастере, по умолчанию 8080:</p>
+        <pre class="code">https://server.example.com:8080</pre>
+        <p>Если вы меняли SSH или включили firewall, мастер попросит подтвердить, что доступ к серверу не потерян: откройте второе окно, зайдите по SSH и выполните <code>touch /run/luckystack-net-ok</code>. Без подтверждения через 5 минут SSH и firewall сами вернутся к прежним настройкам.</p>
+        <p>Первым делом включите двухфакторный вход для admin и проверьте раздел <a href="#panel">Дополнения</a>: там видно, что сервер в порядке.</p>
+      </li>
+      <li><b>Проверьте сервер</b>
+        <pre class="code">luckyctl check</pre>
+        <p>Должно получиться без ошибок. Предупреждения нормальны для свежего сервера, например про отсутствие копии бэкапа на другом сервере. Как выглядит вывод, показано в разделе <a href="#cli-check">luckyctl check</a>.</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ТРЕБОВАНИЯ -->
+  <section class="doc" id="requirements">
+    <span class="label eyebrow">Начало</span>
+    <h2>Требования</h2>
+    <p>Нужен чистый сервер: свежая установка ОС, без панелей и без сайтов. На занятый сервер мастер не пойдёт, для него есть отдельный режим подключения.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Что</th><th>Минимум</th><th>Комментарий</th></tr></thead>
+      <tbody>
+        <tr><td>ОС</td><td>Debian 12 или 13, Ubuntu 22.04 или 24.04</td><td>На всех четырёх проверено установкой с нуля, перезагрузкой, сайтами, почтой и восстановлением из бэкапа</td></tr>
+        <tr><td>Память</td><td>2 ГБ</td><td>С ClamAV лучше 4 ГБ. На малой памяти мастер сам предложит swap или отказаться от ClamAV</td></tr>
+        <tr><td>Диск</td><td>20 ГБ</td><td>Плюс место под сайты, почту и бэкапы</td></tr>
+        <tr><td>Сеть</td><td>публичный IPv4</td><td>IPv6 подхватывается сам, если на сервере есть глобальный адрес и маршрут</td></tr>
+        <tr><td>Порт 25</td><td>открыт у хостера</td><td>Нужен только если ставите почту. Многие хостеры закрывают его по умолчанию, проверьте заранее</td></tr>
+        <tr><td>Доступ</td><td>root</td><td>Через sudo тоже можно</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- МАСТЕР -->
+  <section class="doc" id="wizard">
+    <span class="label eyebrow">Установка</span>
+    <h2>Мастер установки</h2>
+    <p>Мастер задаёт вопросы по порядку, записывает ответы в файл настроек и только потом начинает ставить. До последнего подтверждения на сервере ничего не меняется.</p>
+
+    <h3>Как выглядит вопрос</h3>
+    <p>Каждый вопрос это рамка с вариантами. В квадратных скобках стоит вариант по умолчанию, он выбирается по Enter.</p>
+    <figure class="screen">
+      <div class="bar"><i></i><i></i><i></i><span>root@server: luckyctl install</span></div>
+<pre>┌─ Какую версию nginx собирать ────────────────────────────────────────────────┐
+│ 1) stable — проверенная стабильная (рекомендуется)                           │
+│ 2) mainline — новее, свежие возможности (чуть менее обкатана)                │
+└──────────────────────────────────────────────────────────────────────────────┘
+Ваш выбор [1]: <span class="t-b">1</span>
+
+┌─ Какой OpenSSL собирать с nginx ─────────────────────────────────────────────┐
+│ 1) 3.5 LTS — поддержка до апреля 2030 (рекомендуется)                        │
+│ 2) 4.1 — самая новая, поддержка до ноября 2027                               │
+│ 3) 4.0 — поддержка до мая 2027                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+Ваш выбор [1]: <span class="t-b">▍</span></pre>
+    </figure>
+    <p class="muted" style="font-size:.85rem">Настоящий вывод мастера на тестовом сервере.</p>
+
+    <h3>Какие вопросы будут</h3>
+    <p>Вопросы идут группами. Если какая-то часть не выбрана, вопросы про неё не задаются.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Вопрос</th><th>По умолчанию</th><th>Что выбрать</th></tr></thead>
+      <tbody>
+        <tr><td>Имя сервера и часовой пояс</td><td class="n">из системы</td><td>Полное имя с A-записью. Если хостер уже выставил имя, мастер подставит его сам. Часовой пояс ставится сразу везде: система, PHP, MariaDB, ISPConfig</td></tr>
+        <tr><td>Профиль установки</td><td class="n">Веб + почта</td><td>Минимальный, Веб + почта, Полный или Свой. Профиль просто заранее отмечает компоненты, их можно поправить</td></tr>
+        <tr><td>Какую версию nginx собирать</td><td class="n">stable</td><td>mainline новее, но реже нужен</td></tr>
+        <tr><td>Набор возможностей nginx</td><td class="n">Рекомендуемый</td><td>HTTP/3, Brotli, zstd и ускорения. Полный добавляет статистику трафика, Свой позволяет отметить модули вручную</td></tr>
+        <tr><td>Какой OpenSSL собирать</td><td class="n">3.5 LTS</td><td>3.5 поддерживается до 2030 года, это лучший выбор для сервера, который не хочется трогать</td></tr>
+        <tr><td>Версии PHP</td><td class="n">8.3 и версия системы</td><td>Можно отметить несколько, и какая из них будет по умолчанию. Добавить ещё одну потом можно командой <code>luckyctl add-php</code></td></tr>
+        <tr><td>Компоненты сервера</td><td class="n">по профилю</td><td>Почта, антиспам, DNS, FTP, phpMyAdmin, PostgreSQL, Node.js</td></tr>
+        <tr><td>Защита от атак</td><td class="n">CrowdSec + ufw</td><td>CrowdSec с общими списками атакующих плюс ufw с закрытыми по умолчанию портами</td></tr>
+        <tr><td>Порт панели</td><td class="n">8080</td><td>Любой свободный порт. Панель открывается только по имени сервера, по голому IP закрыта</td></tr>
+        <tr><td>Доступ к панели по IP</td><td class="n">пусто</td><td>Свои постоянные IP через пробел. Пусто значит панель открыта всем, так делать не стоит</td></tr>
+        <tr><td>Порт SSH</td><td class="n">текущий</td><td>Enter оставляет тот порт, на котором SSH работает сейчас. Если поменять, смена произойдёт в самом конце, под защитой от потери доступа</td></tr>
+        <tr><td>Версия ISPConfig</td><td class="n">nightly</td><td>Свежая сборка, надёжно ставится на новых PHP. Stable это официальный релиз, на новых PHP его автоустановка иногда не доходит до конца</td></tr>
+        <tr><td>Откуда ставить Roundcube</td><td class="n">с сайта разработчиков</td><td>Так приходит свежая версия, и её можно откатить. Из пакетов Debian старее, но обновляется вместе с системой</td></tr>
+        <tr><td>Бэкап и уведомления</td><td class="n">бэкап в 03:30</td><td>Каталог, сколько дней хранить, почта и Telegram для уведомлений</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Итог перед установкой</h3>
+    <p>После вопросов мастер сохраняет ответы в <code>/etc/luckystack/setup.conf</code>, показывает сводку и спрашивает, начинать ли установку. Если ответить нет, на сервере ничего не меняется: запустите <code>luckyctl install</code> ещё раз и поправьте нужный ответ.</p>
+  </section>
+
+  <!-- ЭТАПЫ -->
+  <section class="doc" id="stages">
+    <span class="label eyebrow">Установка</span>
+    <h2>Этапы</h2>
+    <p>Установка идёт по этапам. Каждый завершённый этап отмечается, поэтому при сбое продолжить можно с того места, где остановились.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Этап</th><th>Тип</th><th>Что делает</th></tr></thead>
+      <tbody>
+        <tr><td class="m">preflight</td><td><span class="tag core">всегда</span></td><td>Имя хоста, время, /etc/hosts, базовые пакеты, swap при нехватке памяти</td></tr>
+        <tr><td class="m">database</td><td><span class="tag core">всегда</span></td><td>MariaDB и Redis. Существующий пароль root не сбрасывается</td></tr>
+        <tr><td class="m">webserver</td><td><span class="tag core">всегда</span></td><td>Сборка nginx из исходников</td></tr>
+        <tr><td class="m">php</td><td><span class="tag core">всегда</span></td><td>PHP-FPM выбранных версий, OPcache, безопасные настройки</td></tr>
+        <tr><td class="m">nodejs</td><td><span class="tag">по выбору</span></td><td>Node.js LTS</td></tr>
+        <tr><td class="m">phpmyadmin</td><td><span class="tag">по выбору</span></td><td>phpMyAdmin или Adminer, доступ только по имени сервера и списку IP</td></tr>
+        <tr><td class="m">postgresql</td><td><span class="tag">по выбору</span></td><td>PostgreSQL рядом с MariaDB</td></tr>
+        <tr><td class="m">mail</td><td><span class="tag">по выбору</span></td><td>Postfix и Dovecot, вход только по TLS</td></tr>
+        <tr><td class="m">rspamd</td><td><span class="tag">по выбору</span></td><td>Rspamd и ClamAV</td></tr>
+        <tr><td class="m">dns</td><td><span class="tag">по выбору</span></td><td>BIND9 и шаблон зоны с SPF, DMARC и CAA</td></tr>
+        <tr><td class="m">ftp</td><td><span class="tag">по выбору</span></td><td>PureFTPd, только с шифрованием</td></tr>
+        <tr><td class="m">ssl</td><td><span class="tag core">всегда</span></td><td>Клиент Let's Encrypt</td></tr>
+        <tr><td class="m">security</td><td><span class="tag">по выбору</span></td><td>Firewall, fail2ban, харденинг SSH и ядра, автообновления безопасности</td></tr>
+        <tr><td class="m">monit</td><td><span class="tag">по выбору</span></td><td>Monit, перезапуск упавших служб</td></tr>
+        <tr><td class="m">webmail</td><td><span class="tag">по выбору</span></td><td>Roundcube</td></tr>
+        <tr><td class="m">ispconfig</td><td><span class="tag core">всегда</span></td><td>Панель ISPConfig и группа Дополнения</td></tr>
+        <tr><td class="m">hostcert</td><td><span class="tag">по выбору</span></td><td>Настоящий сертификат на имя сервера для панели и почты</td></tr>
+        <tr><td class="m">rcplugins</td><td><span class="tag">по выбору</span></td><td>Плагины Roundcube: смена пароля, автоответ, фильтры прямо из почты</td></tr>
+        <tr><td class="m">maildeliver</td><td><span class="tag">по выбору</span></td><td>TLS для исходящей почты и подсказки по DNS-записям</td></tr>
+        <tr><td class="m">mailsni</td><td><span class="tag">по выбору</span></td><td>Свой сертификат почты у каждого домена</td></tr>
+        <tr><td class="m">tuning</td><td><span class="tag">по выбору</span></td><td>Настройка MariaDB, PHP и Postfix под память и процессор</td></tr>
+        <tr><td class="m">backup</td><td><span class="tag">по выбору</span></td><td>Ежедневный бэкап баз и конфигов</td></tr>
+        <tr><td class="m">malware</td><td><span class="tag">по выбору</span></td><td>rkhunter и сканер вредоносного кода с письмом при находке</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Если этап упал</h3>
+    <p>Мастер пишет, на каком этапе остановился, и где смотреть журнал. Исправьте причину и продолжите:</p>
+    <pre class="code">luckyctl install --resume          <span class="c"># продолжить с первого незавершённого этапа</span>
+luckyctl install --only php        <span class="c"># выполнить ровно один этап</span>
+luckyctl install --from security   <span class="c"># начать с этапа и идти до конца</span></pre>
+    <p>Если сборка nginx раз за разом падает, помогает чистая сборка без остатков прошлых попыток: <code>luckyctl install --clean-build --only webserver</code>.</p>
+  </section>
+
+  <!-- UNATTENDED -->
+  <section class="doc" id="unattended">
+    <span class="label eyebrow">Установка</span>
+    <h2>Установка без вопросов</h2>
+    <p>Если серверов несколько, ответы удобно записать в файл один раз. Сначала поставьте код без мастера командой <code>bash server-setup.sh --install-code</code>, затем положите <code>setup.conf</code> в <code>/etc/luckystack/</code> (права 600) и запустите установку с ключом <code>--unattended</code>. Всё, чего нет в файле, берётся по умолчанию, пароли генерируются и сохраняются туда же.</p>
+    <pre class="code"><span class="c"># /etc/luckystack/setup.conf</span>
+<span class="k">SERVER_FQDN</span>=<span class="s">'server.example.com'</span>
+<span class="k">TIMEZONE</span>=<span class="s">'Europe/Moscow'</span>
+<span class="k">WEBSERVER</span>=<span class="s">'nginx'</span>
+<span class="k">NGINX_CHANNEL</span>=<span class="s">'stable'</span>
+<span class="k">OPENSSL_BRANCH</span>=<span class="s">'3.5'</span>
+<span class="k">PHP_VERSIONS</span>=<span class="s">'8.2 8.4 8.5'</span>
+<span class="k">PHP_DEFAULT</span>=<span class="s">'8.4'</span>
+<span class="k">FIREWALL</span>=<span class="s">'crowdsec'</span>
+<span class="k">CROWDSEC_WITH_UFW</span>=<span class="s">'y'</span>
+<span class="k">SSH_PORT</span>=<span class="s">'2222'</span>
+<span class="k">SSH_ALLOW_IPS</span>=<span class="s">'198.51.100.7 198.51.100.8'</span>
+<span class="k">ISPCONFIG_ADMIN_IPS</span>=<span class="s">'198.51.100.7 198.51.100.8'</span>
+<span class="k">ISPCONFIG_PANEL_PORT</span>=<span class="s">'3333'</span>
+<span class="k">BACKUP_TIME</span>=<span class="s">'03:30'</span>
+<span class="k">BACKUP_RETENTION_DAYS</span>=<span class="s">'14'</span>
+<span class="k">NOTIFY_EMAIL</span>=<span class="s">'admin@example.org'</span></pre>
+    <pre class="code">luckyctl install --unattended</pre>
+    <p>Полный список настроек в разделе <a href="#config">Настройки setup.conf</a>.</p>
+  </section>
+
+  <!-- LUCKYCTL -->
+  <section class="doc" id="cli">
+    <span class="label eyebrow">Работа с сервером</span>
+    <h2>Команда luckyctl</h2>
+    <p>Всё, что делается с сервером из консоли, делается одной командой. Её можно вызывать из любого каталога, справка по любой подкоманде открывается через <code>luckyctl help &lt;команда&gt;</code>.</p>
+    <p>Без команды <code>luckyctl</code> открывает главное меню с теми же действиями.</p>
+
+    <div class="tbl"><table>
+      <thead><tr><th>Команда</th><th>Что делает</th></tr></thead>
+      <tbody>
+        <tr><td class="m">install</td><td>Мастер установки. С <code>--resume</code>, <code>--only</code>, <code>--from</code>, <code>--unattended</code>, <code>--reconfigure</code>, <code>--clean-build</code></td></tr>
+        <tr><td class="m">status</td><td>Что установлено, каких версий и что ждёт обновления</td></tr>
+        <tr><td class="m">check</td><td>Проверка здоровья: службы, порты, сертификаты, бэкапы, безопасность</td></tr>
+        <tr><td class="m">log 100</td><td>Последние строки журнала установщика</td></tr>
+        <tr><td class="m">paths</td><td>Где лежат код, настройки, состояние и журнал</td></tr>
+        <tr><td class="m">update</td><td>Обновить пакеты и заново наложить наши настройки. Ядро только по подтверждению</td></tr>
+        <tr><td class="m">rollback nginx</td><td>Вернуть прошлую сборку nginx. Повтор отменяет откат</td></tr>
+        <tr><td class="m">rollback roundcube</td><td>Вернуть прошлую версию Roundcube вместе со схемой базы</td></tr>
+        <tr><td class="m">rollback luckystack</td><td>Вернуть прошлый выпуск самого LuckyStack</td></tr>
+        <tr><td class="m">backup</td><td>Сделать бэкап сейчас, <code>backup list</code> покажет снимки</td></tr>
+        <tr><td class="m">restore</td><td>Восстановить из снимка: базы, конфиги, сайты, почту</td></tr>
+        <tr><td class="m">add-php 8.5</td><td>Добавить версию PHP, она сразу появится в списке у сайтов</td></tr>
+        <tr><td class="m">remove-php</td><td>Удалить версию PHP. Не даст удалить ту, на которой есть сайты</td></tr>
+        <tr><td class="m">timezone Europe/Moscow</td><td>Сменить часовой пояс везде: система, PHP, MariaDB, ISPConfig, cron</td></tr>
+        <tr><td class="m">adopt</td><td>Подключить бэкап, уведомления и защиту к серверу, собранному вручную</td></tr>
+        <tr><td class="m">diagnostics</td><td>Собрать архив для разбора проблемы, без паролей и ключей</td></tr>
+        <tr><td class="m">uninstall</td><td>Удалить компоненты. Данные остаются, с <code>--purge</code> удаляются вместе с ними</td></tr>
+        <tr><td class="m">self-update</td><td>Поставить последний выпуск LuckyStack с GitHub, прошлый остаётся для отката</td></tr>
+        <tr><td class="m">version</td><td>Какая версия стоит, откуда взята, есть ли новая и что в ней изменилось</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3 id="cli-status">luckyctl status</h3>
+    <p>Показывает, что стоит на сервере. Удобно перед обновлением и когда нужно быстро ответить на вопрос, какая версия PHP по умолчанию.</p>
+    <figure class="screen">
+      <div class="bar"><i></i><i></i><i></i><span>root@server: luckyctl status</span></div>
+<pre><span class="t-dim">════════════════════════════════════════════════════════════════════════════════</span>
+<span class="t-b">             Состояние системы — установленные компоненты и версии</span>
+<span class="t-dim">════════════════════════════════════════════════════════════════════════════════</span>
+┌─ ОС ─────────────────────────────────────────────────────────────────────────┐
+│   Debian GNU/Linux 12 (bookworm)                                             │
+└──────────────────────────────────────────────────────────────────────────────┘
+┌─ Веб-сервер ─────────────────────────────────────────────────────────────────┐
+│   nginx: 1.30.6 · <span class="t-ok">active</span>                                                     │
+└──────────────────────────────────────────────────────────────────────────────┘
+┌─ PHP ────────────────────────────────────────────────────────────────────────┐
+│   php7.4: PHP 7.4.33 · <span class="t-ok">active</span>                                                │
+│   php8.2: PHP 8.2.35 · <span class="t-ok">active</span>                                                │
+│   php8.4: PHP 8.4.27 · <span class="t-ok">active</span>                                                │
+│   php8.5: PHP 8.5.12 · <span class="t-ok">active</span>                                                │
+│   default php → PHP 8.4.27                                                   │
+└──────────────────────────────────────────────────────────────────────────────┘
+┌─ Базы данных ────────────────────────────────────────────────────────────────┐
+│   MariaDB: 12.3.3-MariaDB · <span class="t-ok">active</span>                                           │
+│   Redis: 7.0.15 · <span class="t-ok">active</span>                                                     │
+└──────────────────────────────────────────────────────────────────────────────┘
+┌─ Почта / антиспам ───────────────────────────────────────────────────────────┐
+│   Postfix: 3.7.11 · <span class="t-ok">active</span>                                                   │
+│   Dovecot: 2.3.19.1 · <span class="t-ok">active</span>                                                 │
+│   Rspamd: 4.2.3 · <span class="t-ok">active</span>                                                     │
+│   ClamAV: 1.4.6 · <span class="t-ok">active</span>                                                     │
+└──────────────────────────────────────────────────────────────────────────────┘
+┌─ Безопасность ───────────────────────────────────────────────────────────────┐
+│   CrowdSec: v1.8.2 · <span class="t-ok">active</span>                                                  │
+│   UFW: <span class="t-ok">active</span>                                                                │
+│   fail2ban: 2 · <span class="t-ok">active</span>                                                       │
+└──────────────────────────────────────────────────────────────────────────────┘
+┌─ Обновления ─────────────────────────────────────────────────────────────────┐
+│   Пакетов apt к обновлению: 0                                                │
+│   <span class="t-warn">ISPConfig: 3.3dev (nightly) → есть сборка от 2026-11-07</span>                    │
+└──────────────────────────────────────────────────────────────────────────────┘</pre>
+    </figure>
+    <p class="muted" style="font-size:.85rem">Сокращено: убраны блоки со службами и админками БД.</p>
+
+    <h3 id="cli-check">luckyctl check</h3>
+    <p>Проверяет сервер по пунктам и в конце пишет итог. <span style="color:var(--ok)">✓</span> значит всё хорошо, <span style="color:var(--warn)">!</span> стоит посмотреть, <span style="color:var(--bad)">✗</span> что-то сломано. Та же проверка раз в шесть часов идёт в фоне, и когда появляется новая проблема, приходит уведомление.</p>
+    <figure class="screen">
+      <div class="bar"><i></i><i></i><i></i><span>root@server: luckyctl check</span></div>
+<pre><span class="t-dim">════════════════════════════════════════════════════════════════════════════════</span>
+<span class="t-b">                           Проверка здоровья сервера</span>
+<span class="t-dim">════════════════════════════════════════════════════════════════════════════════</span>
+┌─ Сервисы ────────────────────────────────────────────────────────────────────┐
+│   <span class="t-ok">✓</span> nginx (nginx): active                                                    │
+│   <span class="t-ok">✓</span> MariaDB (mariadb): active                                                │
+│   <span class="t-ok">✓</span> PHP-FPM 8.4 (php8.4-fpm): active                                         │
+│   <span class="t-ok">✓</span> Postfix (postfix): active                                                │
+│   <span class="t-ok">✓</span> CrowdSec (crowdsec): active                                              │
+│   <span class="t-ok">✓</span> конфигурация nginx валидна (nginx -t)                                    │
+└──────────────────────────────────────────────────────────────────────────────┘
+┌─ Сетевые порты (LISTEN) ─────────────────────────────────────────────────────┐
+│   <span class="t-ok">✓</span> порт 443 (web) слушается                                                 │
+│   <span class="t-ok">✓</span> HTTP/3: nginx слушает UDP/443 (QUIC)                                     │
+│   <span class="t-ok">✓</span> HTTP/3: UDP/443 открыт в ufw                                             │
+│   <span class="t-ok">✓</span> чувствительные сервисы (БД/кэш) не торчат наружу (только localhost)     │
+└──────────────────────────────────────────────────────────────────────────────┘
+┌─ TLS-сертификаты ────────────────────────────────────────────────────────────┐
+│   <span class="t-ok">✓</span> панель ISPConfig: валиден (87 дн.) (Let's Encrypt)                      │
+│   <span class="t-ok">✓</span> LE server.example.com: валиден (87 дн.)                                  │
+└──────────────────────────────────────────────────────────────────────────────┘
+┌─ Безопасность и бэкапы ──────────────────────────────────────────────────────┐
+│   <span class="t-ok">✓</span> ufw включён и переживёт перезагрузку                                     │
+│   <span class="t-warn">!</span> SSH: вход по паролю разрешён (надёжнее только по ключу)                  │
+│   <span class="t-ok">✓</span> серверный бэкап (БД и конфиги) по расписанию                             │
+│   <span class="t-warn">!</span> бэкапы только на этом диске, копии вне сервера нет                       │
+│   <span class="t-warn">!</span> почта (/var/vmail) в бэкап не входит                                     │
+└──────────────────────────────────────────────────────────────────────────────┘
+┌─ Итог ───────────────────────────────────────────────────────────────────────┐
+│   <span class="t-ok">OK: 41</span>   <span class="t-warn">ВНИМАНИЕ: 5</span>   ОШИБКА: 0                                           │
+└──────────────────────────────────────────────────────────────────────────────┘
+<span class="t-warn">[!]</span> Есть предупреждения (5) — посмотрите пункты с !.</pre>
+    </figure>
+    <p class="muted" style="font-size:.85rem">Сокращено: из 46 пунктов показана часть. Код выхода 0, если ошибок нет, поэтому команду можно вызывать из своего мониторинга.</p>
+  </section>
+
+  <!-- ПАНЕЛЬ -->
+  <section class="doc" id="panel">
+    <span class="label eyebrow">Работа с сервером</span>
+    <h2>Панель Дополнения</h2>
+    <p>Всё, что LuckyStack добавляет в ISPConfig, собрано в одной группе меню. Родные пункты ISPConfig остаются на своих местах, так что всегда видно, где своё, а где из коробки. Группа хранится в отдельном каталоге меню, поэтому обновление ISPConfig её не стирает.</p>
+    <p>Путь: <span class="crumb"><span>System</span><em>›</em><span>Дополнения</span></span></p>
+
+    <div class="cards">
+      <div class="card"><b>Обслуживание сервера</b><p>Версии, проверки, обновление по пунктам, откат и настройки сборки nginx. Подробно ниже.</p></div>
+      <div class="card"><b>Уведомления</b><p>Почта и Telegram, какие события присылать, тихие часы, кнопка тестового сообщения.</p></div>
+      <div class="card"><b>Бэкап / Восстановление</b><p>Список снимков, бэкап по кнопке и восстановление выбранной части: базы, конфиги, сайты, почта.</p></div>
+      <div class="card"><b>Firewall IP-rules</b><p>Какие порты с каких адресов открыты. Заменяет родной Firewall ISPConfig, который умеет только открыть порт всем.</p></div>
+      <div class="card"><b>Блок-лист</b><p>Закрыть адрес или подсеть целиком, с комментарием, зачем.</p></div>
+      <div class="card"><b>Доверенные IP</b><p>Адреса, которые никогда не банятся ни CrowdSec, ни fail2ban. Свой офис, мониторинг.</p></div>
+      <div class="card"><b>CrowdSec</b><p>Кто сейчас забанен, за что и откуда, снятие бана одной кнопкой.</p></div>
+      <div class="card"><b>Fail2ban</b><p>Состояние jail'ов, список банов, разбан.</p></div>
+      <div class="card"><b>Node.js и Composer</b><p>Версии, обновление Composer, проверка зависимостей сайтов на известные уязвимости.</p></div>
+      <div class="card"><b>Заморозка vhost</b><p>Галочка в форме сайта. Ручные правки конфига nginx не пропадут, когда ISPConfig перегенерирует сайт.</p></div>
+    </div>
+
+    <h3 id="panel-maint">Обслуживание сервера</h3>
+    <p>Главная страница группы. Четыре вкладки, переключайте их прямо на примере ниже.</p>
+
+    <div class="mock" id="mock-maint">
+      <div class="chrome"><i></i><i></i><i></i><span>https://server.example.com:3333/index.php#admin/ss_maint.php</span></div>
+      <div class="appbar"><b>ISPConfig</b><span>Home</span><span>Client</span><span>Sites</span><span>Email</span><span>DNS</span><span class="on">System</span><span>Tools</span><span>Monitor</span></div>
+      <div class="body">
+        <div class="side">
+          <div class="h">System</div>
+          <div>CP Users</div>
+          <div>Server Config</div>
+          <div>Additional PHP Versions</div>
+          <div class="h">Дополнения</div>
+          <div class="on">Обслуживание сервера</div>
+          <div class="ours">Уведомления</div>
+          <div class="ours">Бэкап / Восстановление</div>
+          <div class="ours">Firewall IP-rules</div>
+          <div class="ours">Блок-лист</div>
+          <div class="ours">Доверенные IP</div>
+          <div class="ours">CrowdSec</div>
+          <div class="ours">Fail2ban</div>
+          <div class="ours">Node.js</div>
+          <div class="ours">Composer</div>
+        </div>
+        <div class="content">
+          <h5>Обслуживание сервера</h5>
+          <div class="tabs" role="tablist" aria-label="Вкладки панели">
+            <button role="tab" aria-selected="true" aria-controls="p-over" id="t-over">Состояние</button>
+            <button role="tab" aria-selected="false" aria-controls="p-upd" id="t-upd" tabindex="-1">Обновление</button>
+            <button role="tab" aria-selected="false" aria-controls="p-set" id="t-set" tabindex="-1">Настройки</button>
+            <button role="tab" aria-selected="false" aria-controls="p-aud" id="t-aud" tabindex="-1">Журнал</button>
+          </div>
+
+          <div class="pane" role="tabpanel" id="p-over" aria-labelledby="t-over">
+            <dl class="kv">
+              <dt>ОС</dt><dd>Debian GNU/Linux 12 (bookworm), ядро 6.1.0-54</dd>
+              <dt>nginx</dt><dd>1.30.6, OpenSSL 3.5.9</dd>
+              <dt>MariaDB</dt><dd>12.3.3</dd>
+              <dt>ISPConfig</dt><dd>3.3dev (БД 107)</dd>
+              <dt>Roundcube</dt><dd>1.6.20</dd>
+              <dt>PHP</dt><dd>7.4, 8.2, 8.4, 8.5 · по умолчанию 8.4</dd>
+              <dt>Работает</dt><dd>1 день 15 часов</dd>
+            </dl>
+            <div class="sub">Проверки безопасности</div>
+            <div class="chk">
+              <div><span class="ico warn">!</span><span>Нет двухфакторного входа у администраторов: admin. Включается в Tools › User Settings</span><span></span></div>
+              <div><span class="ico ok">✓</span><span>PHP 8.5 поддерживается до 2029-12-31 (сайтов: 1)</span><span></span></div>
+              <div><span class="ico ok">✓</span><span>OpenSSL 3.5.9 поддерживается до 2030-04-08</span><span></span></div>
+              <div><span class="ico ok">✓</span><span>nginx: ограничения systemd, оценка 4.9 из 10</span><span></span></div>
+              <div><span class="ico ok">✓</span><span>Все shell-пользователи ISPConfig в jail</span><span></span></div>
+              <div><span class="ico warn">!</span><span>Файлов сайтов с записью для всех: 5</span><span><span class="fix">Исправить права</span></span></div>
+            </div>
+            <div class="sub">Проверка здоровья</div>
+            <div class="counts"><span>OK <b>41</b></span><span>Внимание <b>5</b></span><span>Ошибка <b>0</b></span><span>2026-11-07 12:46</span></div>
+            <div class="chk">
+              <div><span class="ico warn">!</span><span>SSH: вход по паролю разрешён (надёжнее только по ключу)</span><span></span></div>
+              <div><span class="ico warn">!</span><span>бэкапы только на этом диске, копии вне сервера нет</span><span><span class="fix">Настроить</span></span></div>
+              <div><span class="ico warn">!</span><span>почта (/var/vmail) в бэкап не входит</span><span><span class="fix">Включить</span></span></div>
+            </div>
+            <p class="note">Версии обновляются раз в 10 минут, проверка здоровья раз в 6 часов. Кнопки Обновить и Проверить сейчас запускают сбор вне очереди.</p>
+          </div>
+
+          <div class="pane" role="tabpanel" id="p-upd" aria-labelledby="t-upd" hidden>
+            <div class="sub" style="margin-top:0">Что обновить</div>
+            <div class="opts">
+              <div class="opt"><span class="box on">✓</span><span>Пакеты системы<small>apt upgrade</small></span></div>
+              <div class="opt"><span class="box on">✓</span><span>Защита<small>sysctl, fail2ban, права, таймауты nginx</small></span></div>
+              <div class="opt"><span class="box on">✓</span><span>Наши панели<small>Дополнения и правки ISPConfig</small></span></div>
+              <div class="opt"><span class="box on">✓</span><span>Бэкап и уведомления</span></div>
+              <div class="opt"><span class="box">&nbsp;</span><span>nginx<small>пересборка, перед ней бэкап</small></span></div>
+              <div class="opt"><span class="box">&nbsp;</span><span>ISPConfig<small>официальный апдейтер, перед ним бэкап</small></span></div>
+              <div class="opt"><span class="box">&nbsp;</span><span>Roundcube<small>новая версия той же ветки</small></span></div>
+            </div>
+            <p style="margin-top:14px"><span class="btn">Запустить обновление</span></p>
+            <div class="sub">Откат</div>
+            <div class="row"><span>nginx: прошлая сборка 1.30.6, OpenSSL 4.1.0 (2026-11-06 15:22)</span><span class="btn ghost" style="text-align:center">Откатить nginx</span></div>
+            <div class="row"><span>Roundcube: прошлая версия 1.7.5 (2026-11-06 15:23)</span><span class="btn ghost" style="text-align:center">Откатить Roundcube</span></div>
+            <div class="sub">Задания</div>
+            <div class="scroll"><table>
+              <thead><tr><th>#</th><th>Действие</th><th>Итог</th><th>Время</th></tr></thead>
+              <tbody>
+                <tr><td class="mono">157</td><td>обновление</td><td><span class="st err">ошибка</span> установщик уже запущен, повторите позже</td><td class="mono">18:43:42</td></tr>
+                <tr><td class="mono">156</td><td>обновление</td><td><span class="st done">готово</span> завершено, журнал 117 строк</td><td class="mono">18:43:38</td></tr>
+                <tr><td class="mono">154</td><td>обновление</td><td><span class="st err">ошибка</span> небезопасные права или владелец: lib/update.sh</td><td class="mono">18:43:26</td></tr>
+              </tbody>
+            </table></div>
+            <p class="note">Задания с ошибкой выше настоящие: так панель отказывается запускать установщик, если он уже работает или если кто-то кроме root может менять его файлы.</p>
+          </div>
+
+          <div class="pane" role="tabpanel" id="p-set" aria-labelledby="t-set" hidden>
+            <p class="note" style="margin-top:0">Настройки применяются при следующем обновлении соответствующей части.</p>
+            <div class="row"><span>Ветка OpenSSL для nginx</span><span class="sel">3.5 LTS <span>▾</span></span></div>
+            <div class="row"><span>Канал nginx</span><span class="sel">stable <span>▾</span></span></div>
+            <div class="row"><span>Ветка Roundcube</span><span class="sel">1.6 <span>▾</span></span></div>
+            <div class="sub">Модули nginx</div>
+            <div class="opts">
+              <div class="opt"><span class="box on">✓</span><span>Brotli<small>используется в конфигах</small></span></div>
+              <div class="opt"><span class="box on">✓</span><span>zstd<small>используется в конфигах</small></span></div>
+              <div class="opt"><span class="box on">✓</span><span>headers-more</span></div>
+              <div class="opt"><span class="box on">✓</span><span>cache_purge</span></div>
+              <div class="opt"><span class="box">&nbsp;</span><span>VTS<small>статистика трафика</small></span></div>
+              <div class="opt"><span class="box on">✓</span><span>jemalloc</span></div>
+            </div>
+            <div class="sub">Защита</div>
+            <div class="opts">
+              <div class="opt"><span class="box on">✓</span><span>Ограничения systemd для nginx и MariaDB</span></div>
+              <div class="opt"><span class="box on">✓</span><span>Короткие таймауты nginx</span></div>
+              <div class="opt"><span class="box on">✓</span><span>Автообновления из сторонних репозиториев</span></div>
+              <div class="opt"><span class="box on">✓</span><span>FTP только с шифрованием</span></div>
+            </div>
+            <div class="row" style="margin-top:8px"><span>Почта для писем безопасности ISPConfig</span><span class="sel">admin@example.org</span></div>
+            <p style="margin-top:12px"><span class="btn">Сохранить</span></p>
+          </div>
+
+          <div class="pane" role="tabpanel" id="p-aud" aria-labelledby="t-aud" hidden>
+            <div class="scroll"><table>
+              <thead><tr><th>Когда</th><th>Кто</th><th>Панель</th><th>Действие</th><th>Подробности</th></tr></thead>
+              <tbody>
+                <tr><td class="mono">2026-11-06 18:43</td><td>admin</td><td>maint</td><td>update</td><td class="mono">backup notify</td></tr>
+                <tr><td class="mono">2026-11-06 18:43</td><td>admin</td><td>maint</td><td>save</td><td class="mono">OPENSSL_BRANCH=4.1 NGX_VTS=y</td></tr>
+                <tr><td class="mono">2026-11-06 18:43</td><td>admin</td><td>maint</td><td>healthcheck</td><td></td></tr>
+                <tr><td class="mono">2026-11-06 18:19</td><td>admin</td><td>vhost_freeze</td><td>apply</td><td class="mono">site1.example.org</td></tr>
+                <tr><td class="mono">2026-11-06 15:55</td><td>admin</td><td>vhost_freeze</td><td>import</td><td class="mono">freeze-test.example.org</td></tr>
+              </tbody>
+            </table></div>
+            <p class="note">В журнал попадает каждое действие во всех панелях группы: кто, когда и с какими параметрами.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="mock-cap"><span class="label">Пример экрана</span><span>Макет страницы, собранный по данным тестового сервера. Настоящая страница выглядит в стиле ISPConfig, состав и тексты те же.</span></p>
+
+    <h3>Как панель меняет сервер</h3>
+    <p>Сама панель ISPConfig работает не от root и ничего на сервере не меняет. Когда вы нажимаете кнопку, панель записывает задание в таблицу. В течение минуты его забирает служебный скрипт, который работает от root, и выполняет только то, что есть в его коротком списке разрешённых действий.</p>
+    <ul>
+      <li>Перед запуском установщика скрипт проверяет, что его файлы принадлежат root и никто другой не может их менять. Иначе задание отклоняется.</li>
+      <li>Если установщик уже работает, второе задание не стартует.</li>
+      <li>Перед обновлением nginx или ISPConfig делается бэкап. Если он не удался, обновление не начинается.</li>
+      <li>Каждое задание пишет свой журнал, его видно в панели, и итог приходит в уведомлениях.</li>
+    </ul>
+
+    <h3 id="freeze">Заморозка vhost</h3>
+    <p>ISPConfig хранит конфиг сайта у себя и перезаписывает файл в <code>/etc/nginx/sites-available</code> при каждом сохранении сайта. Если вы правили конфиг руками, правки пропадают. Галочка Не обновлять vhost в форме сайта это исправляет: после перегенерации на место кладётся ваш вариант.</p>
+    <p>Путь: <span class="crumb"><span>Sites</span><em>›</em><span>Website</span><em>›</em><span>Options</span><em>›</em><span>Не обновлять vhost</span></span></p>
+    <p>Если у замороженного сайта поменять версию PHP, LuckyStack сам поправит адрес PHP-FPM в вашем конфиге, даже если сменился способ подключения с сокета на порт. Если адрес в конфиге вписан вручную и не похож на стандартный, в панели появится предупреждение, а конфиг останется как есть.</p>
+  </section>
+
+  <!-- ОБНОВЛЕНИЯ -->
+  <section class="doc" id="updates">
+    <span class="label eyebrow">Работа с сервером</span>
+    <h2>Обновления</h2>
+    <p>Обновление из панели и командой <code>luckyctl update</code> идёт по одному пути. По умолчанию обновляются пакеты и наши настройки, ядро не трогается.</p>
+
+    <div class="flow">
+      <div><span class="label">Шаг 1</span><b>Бэкап</b><p>Только если выбрано ядро. Не удался бэкап, обновление не начинается.</p></div>
+      <div><span class="label">Шаг 2</span><b>Ядро</b><p>Сборка nginx, апдейтер ISPConfig. Новый nginx сначала проверяет ваш конфиг.</p></div>
+      <div><span class="label">Шаг 3</span><b>Наши правки</b><p>Всё, что затёр апдейтер ISPConfig, накладывается заново.</p></div>
+      <div><span class="label">Шаг 4</span><b>Отчёт</b><p>Итог в Telegram и на почту, журнал в панели.</p></div>
+    </div>
+
+    <h3>Что обновляется всегда</h3>
+    <ul>
+      <li>Пакеты системы через apt.</li>
+      <li>Автообновления безопасности, sysctl, fail2ban, права на конфиги.</li>
+      <li>Шаблоны ISPConfig: HTTP/2, TLS 1.3 и HTTP/3 для панели и сайтов.</li>
+      <li>Ограничение доступа по IP: панель только по имени сервера, phpMyAdmin только со своих адресов.</li>
+      <li>Все панели группы Дополнения и регистрация версий PHP в ISPConfig.</li>
+    </ul>
+    <p>Каждый пункт можно запускать сколько угодно раз. Если всё уже на месте, он так и напишет и ничего не тронет.</p>
+
+    <h3>Ядро только по запросу</h3>
+    <p>Пересборка nginx и обновление ISPConfig делаются только если вы их отметили в панели или подтвердили в консоли. Пароль root MariaDB и основные конфиги служб при обновлении не трогаются.</p>
+    <pre class="code">luckyctl update                     <span class="c"># спросит про каждую часть ядра</span>
+luckyctl update --dry-run           <span class="c"># показать план, ничего не меняя</span>
+luckyctl update nginx ispconfig     <span class="c"># обновить ядро без вопросов</span></pre>
+
+    <h3>Пример журнала обновления</h3>
+    <figure class="screen">
+      <div class="bar"><i></i><i></i><i></i><span>Дополнения › Обслуживание сервера › задание 156</span></div>
+<pre><span class="t-b">                           Режим обновления / патчей</span>
+<span class="t-i">[i]</span> Ядро — nginx (пересборка) и ISPConfig (офиц. апдейтер) — обновляется ТОЛЬКО по явному запросу.
+<span class="t-i">[i]</span> Пароль root MariaDB и базовые конфиги служб НЕ трогаются.
+<span class="t-step">[→]</span> Обновление: Модернизация vhost панели/apps (http2/http3)
+<span class="t-i">[i]</span> vhost панели/apps уже современны (http2 on; + TLSv1.3) — изменений нет.
+<span class="t-i">[i]</span> UFW: UDP для QUIC/HTTP3 — панель 3333 только с 198.51.100.7 198.51.100.8, apps 3331 всем.
+<span class="t-step">[→]</span> Обновление: Регистрация версий PHP в ISPConfig
+<span class="t-ok">[✓]</span> Версии PHP в ISPConfig: добавлено 0, синхронизировано 4.
+<span class="t-step">[→]</span> Обновление: Расширение firewall ISPConfig (IP-ограничения портов)
+<span class="t-i">[i]</span> В панель Firewall засеяно правил-источников: 5 (SSH/панель/MySQL). Существующие не тронуты.
+<span class="t-ok">[✓]</span> Firewall ISPConfig расширен: модуль «Firewall IP-rules» (отдельные поля) + плагин (before.rules).
+<span class="t-step">[→]</span> Обновление: Заморозка vhost (галочка «Не обновлять vhost»)
+<span class="t-ok">[✓]</span> Заморозка vhost развёрнута: галочка у сайта + плагин (restore frozen-vhost после регенерации).
+<span class="t-step">[→]</span> Обновление: Панель CrowdSec (активные баны + снятие)
+<span class="t-ok">[✓]</span> Панель CrowdSec развёрнута (меню «Дополнения» → CrowdSec; кэш решений + очередь снятия + cron).
+<span class="t-step">[→]</span> Обновление: Composer (глобально)
+<span class="t-i">[i]</span> Composer уже установлен: Composer version 2.11.1 2026-10-30 14:52:10
+<span class="t-dim">...</span></pre>
+    </figure>
+    <p class="muted" style="font-size:.85rem">Настоящий журнал задания из панели, сокращён. [→] начало шага, [✓] сделано, [i] пояснение, [!] предупреждение, [✗] ошибка.</p>
+    <div class="callout"><b class="t">Сбой одного шага не обрывает остальные</b>Если, например, не скачалась новая версия Roundcube, остальные шаги всё равно выполнятся, а в итоге будет написано, какой шаг не прошёл. Его можно повторить отдельно.</div>
+  </section>
+
+  <!-- ОТКАТ -->
+  <section class="doc" id="rollback">
+    <span class="label eyebrow">Работа с сервером</span>
+    <h2>Откат</h2>
+    <p>При каждом обновлении nginx и Roundcube прошлая версия остаётся рядом. Вернуть её можно кнопкой на вкладке Обновление или командой. Повторный откат возвращает новую версию обратно.</p>
+
+    <h3>nginx</h3>
+    <p>Прошлая сборка лежит как <code>/usr/sbin/nginx.backup</code>. Перед подменой она проверяет ваш текущий конфиг, и если не принимает его, откат отменяется, а nginx остаётся как был.</p>
+    <figure class="screen">
+      <div class="bar"><i></i><i></i><i></i><span>root@server: luckyctl rollback nginx</span></div>
+<pre><span class="t-step">[→]</span> Откат nginx: nginx/1.30.6 OpenSSL 3.5.9 → nginx/1.30.6 OpenSSL 4.1.0
+<span class="t-ok">[✓]</span> nginx: откат выполнен, работает nginx/1.30.6 OpenSSL 4.1.0. Прошлая сборка теперь nginx/1.30.6 OpenSSL 3.5.9</pre>
+    </figure>
+
+    <h3>Roundcube</h3>
+    <p>Перед обновлением вебмейла сохраняются прошлый каталог, схема и дамп его базы. Если новая версия меняла схему, при откате база возвращается из дампа. Если после отката страница входа не открывается, всё возвращается на новую версию само.</p>
+    <figure class="screen">
+      <div class="bar"><i></i><i></i><i></i><span>root@server: luckyctl rollback roundcube</span></div>
+<pre><span class="t-step">[→]</span> Откат Roundcube 1.7.5 → 1.6.20
+<span class="t-ok">[✓]</span> Roundcube: откат на 1.6.20 выполнен. Следующий --update снова предложит новую версию этой ветки.</pre>
+    </figure>
+
+    <h3>ISPConfig и базы</h3>
+    <p>У ISPConfig нет второй копии рядом, поэтому перед его обновлением делается полный бэкап баз и конфигов. Вернуться можно через <a href="#backup">восстановление</a> из снимка, сделанного перед обновлением.</p>
+  </section>
+
+  <!-- БЕЗОПАСНОСТЬ -->
+  <section class="doc" id="security">
+    <span class="label eyebrow">Защита и данные</span>
+    <h2>Безопасность</h2>
+    <p>То, что обычно включают после первого взлома, здесь включено сразу. Ниже по частям, что именно и почему.</p>
+
+    <h3>Сеть и firewall</h3>
+    <ul>
+      <li>ufw закрывает все порты, кроме тех, что нужны выбранным службам. SSH и панель можно открыть только для своих IP.</li>
+      <li>CrowdSec читает журналы nginx, SSH и почты, банит перебор паролей и сканеры и получает общий список атакующих.</li>
+      <li>fail2ban дополнительно следит за SSH, почтой, FTP, панелью ISPConfig, Roundcube и входом в MariaDB.</li>
+      <li>Адреса из списка Доверенные IP никогда не банятся, чтобы случайно не закрыть себе доступ.</li>
+      <li>Чтобы не потерять сервер при правке SSH или firewall, рискованные изменения откатываются сами, если за несколько минут вы не подтвердили, что доступ остался.</li>
+    </ul>
+
+    <h3>Доступ</h3>
+    <ul>
+      <li>Панель открывается только по имени сервера. Запрос по IP получает пустой ответ, так сканеры не видят, что здесь ISPConfig.</li>
+      <li>На 443 по IP или чужому имени соединение обрывается ещё до сертификата, так по нему не узнать, какие сайты на сервере. На 80 по IP можно выбрать: стартовая страница сервера, переадресация на его имя или пустой ответ.</li>
+      <li>SSH: вход только по ключу (по желанию), без проброса портов и агента, свой порт.</li>
+      <li>Почта и FTP принимают пароль только по TLS.</li>
+    </ul>
+
+    <h3>PHP и сайты</h3>
+    <ul>
+      <li>Версия PHP не видна в заголовках, куки сессий недоступны из JavaScript.</li>
+      <li>OPcache у каждого сайта свой, один сайт не может прочитать код другого из кэша.</li>
+      <li>Shell-пользователи ISPConfig заперты в jail, проверка в панели напоминает, если это не так.</li>
+      <li>Файлы сайтов с правом записи для всех находятся при проверке, исправляются кнопкой.</li>
+      <li>Раз в сутки сайты проверяются на вредоносный код, при находке приходит письмо.</li>
+    </ul>
+
+    <h3>Ядро и службы</h3>
+    <ul>
+      <li>sysctl: защита от подмены маршрутов, SYN-флуда, утечек адресов ядра.</li>
+      <li>Короткие таймауты nginx против медленных атак: заголовок 15 секунд, тело и отправка 60.</li>
+      <li>По желанию ограничения systemd для nginx и MariaDB: только чтение системы, отдельный /tmp, без лишних прав ядра. Оценка systemd-analyze security с ними 4.9 у nginx и 5.7 у MariaDB, чем меньше, тем лучше. Если служба с ограничениями не стартует, они снимаются сами.</li>
+      <li>Шифрование: TLS 1.2 и 1.3, обмен ключами X25519MLKEM768, устойчивый к квантовым компьютерам, при поддержке браузером.</li>
+    </ul>
+
+    <div class="callout warn"><b class="t">Что сделать самому</b>Включите двухфакторный вход для всех администраторов панели: <span class="crumb"><span>Tools</span><em>›</em><span>User Settings</span></span>. Без него пароль от панели остаётся единственной защитой всех сайтов.</div>
+  </section>
+
+  <!-- БЭКАП -->
+  <section class="doc" id="backup">
+    <span class="label eyebrow">Защита и данные</span>
+    <h2>Бэкапы</h2>
+    <p>Каждую ночь делается снимок: дамп всех баз, <code>/etc</code> и конфиги ISPConfig. По желанию в снимок входят сайты и почта. Старые снимки удаляются по сроку, но последние три остаются всегда.</p>
+
+    <h3>Где и как часто</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>Настройка</th><th>По умолчанию</th><th>Комментарий</th></tr></thead>
+      <tbody>
+        <tr><td class="m">BACKUP_DIR</td><td class="n">/var/backups/server</td><td>Отдельный каталог. Системные каталоги, /var/www и /var/vmail выбрать нельзя, это защита от случайного удаления</td></tr>
+        <tr><td class="m">BACKUP_TIME</td><td class="n">03:30</td><td>Время запуска</td></tr>
+        <tr><td class="m">BACKUP_RETENTION_DAYS</td><td class="n">7</td><td>Сколько дней хранить</td></tr>
+        <tr><td class="m">BACKUP_INCLUDE_WWW</td><td class="n">n</td><td>Добавить файлы сайтов</td></tr>
+        <tr><td class="m">BACKUP_INCLUDE_MAIL</td><td class="n">n</td><td>Добавить почтовые ящики</td></tr>
+        <tr><td class="m">BACKUP_REMOTE_TYPE</td><td class="n">none</td><td>Копия на другой сервер: rsync по SSH или rclone в S3, B2 и SFTP</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Команды</h3>
+    <pre class="code">luckyctl backup                     <span class="c"># сделать снимок сейчас</span>
+luckyctl backup list                <span class="c"># список снимков</span>
+luckyctl restore                    <span class="c"># выбрать снимок и что восстановить</span></pre>
+    <p>Сам бэкап делает скрипт <code>/usr/local/sbin/server-backup.sh</code>. Он работает и без LuckyStack, это удобно при восстановлении на новом сервере.</p>
+
+    <h3>Восстановление</h3>
+    <p>По умолчанию восстанавливаются только базы из последнего снимка. Остальное выбирается явно:</p>
+    <pre class="code">server-backup.sh --restore 20261107-033000 --db --etc
+server-backup.sh --restore --all --yes</pre>
+    <p>Восстановление перезаписывает текущие данные. Перед ним стоит сделать свежий снимок, на случай если выбрали не тот. Файлы сайтов восстанавливаются вместе с защитой, которую ISPConfig ставит на их каталоги, ничего снимать вручную не нужно.</p>
+
+    <div class="callout plan"><b class="t">Готовится</b>Копия на второй сервер в режиме только добавления: сервер может дописывать новые снимки, но не может удалить или переписать старые. Тогда даже взломанный сервер не уничтожит свои бэкапы.</div>
+  </section>
+
+  <!-- УВЕДОМЛЕНИЯ -->
+  <section class="doc" id="notify">
+    <span class="label eyebrow">Защита и данные</span>
+    <h2>Уведомления и бот</h2>
+    <p>Сервер сам сообщает о том, что требует внимания. Каналы: почта и Telegram, можно оба. Настраивается в панели: <span class="crumb"><span>System</span><em>›</em><span>Дополнения</span><em>›</em><span>Уведомления</span></span>.</p>
+
+    <h3>О чём приходят сообщения</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>Событие</th><th>Когда</th></tr></thead>
+      <tbody>
+        <tr><td class="m">monitor</td><td>Появилась новая проблема при проверке здоровья, закончился диск, скоро истекает сертификат, давно не было бэкапа, закончилось задание из панели</td></tr>
+        <tr><td class="m">backup</td><td>Бэкап не удался</td></tr>
+        <tr><td class="m">malware</td><td>Сканер нашёл подозрительный файл</td></tr>
+        <tr><td class="m">login</td><td>Вход в панель или по SSH. По умолчанию только с адреса, с которого не входили 180 дней</td></tr>
+      </tbody>
+    </table></div>
+    <p>О новой проблеме сообщение приходит один раз, а не при каждой проверке. В тихие часы, например с 23:00 до 08:00, сообщения в Telegram приходят без звука, кроме критичных: сбой бэкапа, находка антивируса.</p>
+
+    <h3>Бот в Telegram</h3>
+    <p>Если включить бота, ему можно писать команды. Отвечает он только чатам из списка в настройках. Действия, которые что-то меняют, нужно подтвердить кнопкой под сообщением, и каждое попадает в журнал панели.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Команда</th><th>Что делает</th></tr></thead>
+      <tbody>
+        <tr><td class="m">/status</td><td>Нагрузка, диск, память, какие службы не работают, когда был последний бэкап</td></tr>
+        <tr><td class="m">/bans</td><td>Кто сейчас забанен в CrowdSec и fail2ban</td></tr>
+        <tr><td class="m">/check 203.0.113.5</td><td>Где забанен адрес и за что</td></tr>
+        <tr><td class="m">/unban 203.0.113.5</td><td>Снять бан с адреса</td></tr>
+        <tr><td class="m">/allow 203.0.113.5 4</td><td>Добавить адрес в доверенные на 4 часа, чтобы его не забанило. Без числа на сутки, 0 навсегда</td></tr>
+        <tr><td class="m">/backup</td><td>Сделать бэкап сейчас</td></tr>
+        <tr><td class="m">/help</td><td>Список команд</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="chat" aria-label="Пример переписки с ботом">
+      <div class="bubble">[server.example.com] Новые проблемы на сервере: 1
+Внимание: почта (/var/vmail) в бэкап не входит<small>12:47</small></div>
+      <div class="bubble me">/status<small>12:51</small></div>
+      <div class="bubble">Сервер server.example.com
+Аптайм: 1 д 15 ч, нагрузка: 0.21 0.18 0.15
+Диск /: 43%, память: 2310 из 3915 МБ
+Службы: все работают
+Бэкап: последний 0 дн. назад (2026-11-07 03:30)
+Перезагрузка: не нужна<small>12:51</small></div>
+    </div>
+    <p class="mock-cap"><span class="label">Пример</span><span>Тексты сообщений как в коде бота, цифры условные.</span></p>
+  </section>
+
+  <!-- CONFIG -->
+  <section class="doc" id="config">
+    <span class="label eyebrow">Справочник</span>
+    <h2>Настройки setup.conf</h2>
+    <p>Все ответы мастера хранятся в одном файле. Его можно править руками, изменения подхватываются при следующем обновлении. Ниже самые нужные ключи, полный список с пояснениями будет в репозитории.</p>
+
+    <h4>Сервер</h4>
+    <div class="tbl"><table>
+      <thead><tr><th>Ключ</th><th>Значения</th><th>Что задаёт</th></tr></thead>
+      <tbody>
+        <tr><td class="m">SERVER_FQDN</td><td class="n">имя</td><td>Полное имя сервера</td></tr>
+        <tr><td class="m">TIMEZONE</td><td class="n">Europe/Moscow</td><td>Часовой пояс для всего</td></tr>
+        <tr><td class="m">SERVER_HAS_IPV6</td><td class="n">y / n</td><td>Определяется сам, задавать нужно только чтобы отключить IPv6</td></tr>
+        <tr><td class="m">TUNE_SWAP</td><td class="n">y / n</td><td>Создать swap-файл на сервере с малой памятью</td></tr>
+      </tbody>
+    </table></div>
+
+    <h4>Веб и PHP</h4>
+    <div class="tbl"><table>
+      <thead><tr><th>Ключ</th><th>Значения</th><th>Что задаёт</th></tr></thead>
+      <tbody>
+        <tr><td class="m">WEBSERVER</td><td class="n">nginx / apache</td><td>Веб-сервер</td></tr>
+        <tr><td class="m">NGINX_CHANNEL</td><td class="n">stable / mainline</td><td>Какую ветку nginx собирать</td></tr>
+        <tr><td class="m">NGINX_AUTO_VERSION</td><td class="n">y / n</td><td>Брать последнюю версию ветки или ту, что закреплена</td></tr>
+        <tr><td class="m">OPENSSL_BRANCH</td><td class="n">3.5 / 4.1 / 4.0</td><td>Ветка OpenSSL для nginx, по умолчанию 3.5 LTS</td></tr>
+        <tr><td class="m">NGX_BROTLI, NGX_ZSTD</td><td class="n">y / n</td><td>Сжатие Brotli и zstd</td></tr>
+        <tr><td class="m">NGX_QUIC_RETRY</td><td class="n">y / n</td><td>Проверка адреса клиента для HTTP/3, защита от подмены адреса</td></tr>
+        <tr><td class="m">NGX_TIGHT_TIMEOUTS</td><td class="n">y / n</td><td>Короткие таймауты клиентов</td></tr>
+        <tr><td class="m">HTTP_IP_POLICY</td><td class="n">landing / redirect / deny</td><td>Что отдавать на 80 по IP или чужому имени: стартовую страницу, переадресацию на имя сервера или ничего</td></tr>
+        <tr><td class="m">PHP_DEFAULT</td><td class="n">8.3</td><td>Версия PHP по умолчанию для новых сайтов и служебных страниц</td></tr>
+        <tr><td class="m">PHP_CLI_DEFAULT</td><td class="n">как PHP_DEFAULT</td><td>Что запускается командой php в консоли и cron</td></tr>
+      </tbody>
+    </table></div>
+
+    <h4>Базы и почта</h4>
+    <div class="tbl"><table>
+      <thead><tr><th>Ключ</th><th>Значения</th><th>Что задаёт</th></tr></thead>
+      <tbody>
+        <tr><td class="m">MARIADB_SOURCE</td><td class="n">official / debian</td><td>MariaDB из её репозитория или из Debian</td></tr>
+        <tr><td class="m">MARIADB_AUTO_VERSION</td><td class="n">y / n</td><td>Последняя LTS или закреплённая версия</td></tr>
+        <tr><td class="m">INSTALL_CLAMAV</td><td class="n">y / n</td><td>Антивирус для почты, требует около 1,5 ГБ памяти</td></tr>
+        <tr><td class="m">RC_SOURCE</td><td class="n">upstream / debian</td><td>Откуда ставить Roundcube</td></tr>
+        <tr><td class="m">RC_BRANCH</td><td class="n">1.6 / 1.7</td><td>Ветка Roundcube</td></tr>
+      </tbody>
+    </table></div>
+
+    <h4>Доступ и защита</h4>
+    <div class="tbl"><table>
+      <thead><tr><th>Ключ</th><th>Значения</th><th>Что задаёт</th></tr></thead>
+      <tbody>
+        <tr><td class="m">FIREWALL</td><td class="n">crowdsec / ufw / none</td><td>Чем защищаться</td></tr>
+        <tr><td class="m">CROWDSEC_WITH_UFW</td><td class="n">y / n</td><td>ufw с закрытыми портами вместе с CrowdSec</td></tr>
+        <tr><td class="m">SSH_PORT</td><td class="n">число</td><td>Порт SSH</td></tr>
+        <tr><td class="m">SSH_ALLOW_IPS</td><td class="n">IP через пробел</td><td>С каких адресов пускать по SSH, пусто значит со всех</td></tr>
+        <tr><td class="m">SSH_HARDEN</td><td class="n">y / n</td><td>Вход только по ключу</td></tr>
+        <tr><td class="m">ISPCONFIG_ADMIN_IPS</td><td class="n">IP через пробел</td><td>С каких адресов открывается панель</td></tr>
+        <tr><td class="m">ISPCONFIG_PANEL_PORT</td><td class="n">число</td><td>Порт панели</td></tr>
+        <tr><td class="m">PANEL_FQDN_ONLY</td><td class="n">y / n</td><td>Панель только по имени, не по IP</td></tr>
+        <tr><td class="m">FTP_TLS_REQUIRED</td><td class="n">y / n</td><td>FTP только с шифрованием</td></tr>
+        <tr><td class="m">SEC_SERVICE_HARDEN</td><td class="n">y / n</td><td>Ограничения systemd для nginx и MariaDB</td></tr>
+        <tr><td class="m">SEC_AUTO_UPDATES_3RD</td><td class="n">y / n</td><td>Автообновления безопасности и из сторонних репозиториев</td></tr>
+      </tbody>
+    </table></div>
+
+    <h4>Бэкап и уведомления</h4>
+    <div class="tbl"><table>
+      <thead><tr><th>Ключ</th><th>Значения</th><th>Что задаёт</th></tr></thead>
+      <tbody>
+        <tr><td class="m">BACKUP_*</td><td class="n">см. Бэкапы</td><td>Каталог, время, срок хранения, что включать, копия наружу</td></tr>
+        <tr><td class="m">NOTIFY_EMAIL</td><td class="n">адреса через запятую</td><td>Куда слать письма</td></tr>
+        <tr><td class="m">NOTIFY_TG_TOKEN</td><td class="n">токен</td><td>Токен бота Telegram</td></tr>
+        <tr><td class="m">NOTIFY_TG_CHATS</td><td class="n">id через пробел</td><td>Чаты, куда слать и от кого принимать команды</td></tr>
+        <tr><td class="m">NOTIFY_QUIET</td><td class="n">23:00-08:00</td><td>Тихие часы</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- ФАЙЛЫ -->
+  <section class="doc" id="files">
+    <span class="label eyebrow">Справочник</span>
+    <h2>Файлы и журналы</h2>
+    <p>Код, настройки, состояние и журналы лежат раздельно. Поэтому обновление LuckyStack заменяет код и не трогает ваши настройки.</p>
+    <div class="tree">/opt/luckystack/releases/    выпуски кода, current указывает на рабочий
+/etc/luckystack/setup.conf   ваши настройки и пароли, доступ только у root
+/var/lib/luckystack/         отметки пройденных этапов
+/var/log/luckystack/         журналы установки, обновлений и заданий панели
+/usr/local/sbin/luckyctl     команда</div>
+    <p>Где всё лежит на конкретном сервере, покажет <code>luckyctl paths</code>.</p>
+
+    <h3>Журналы</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>Файл</th><th>Что в нём</th></tr></thead>
+      <tbody>
+        <tr><td class="m">/var/log/luckystack/setup.log</td><td>Подробный журнал установки и обновлений. Пароли в нём замаскированы. Быстро посмотреть хвост: <code>luckyctl log</code></td></tr>
+        <tr><td class="m">/var/log/luckystack/panel/job-N.log</td><td>Журнал задания из панели, N это номер задания на вкладке Обновление</td></tr>
+        <tr><td class="m">/var/backups/server/backup.log</td><td>Журнал всех запусков бэкапа</td></tr><tr><td class="m">/var/log/server-tg-bot.log</td><td>Журнал бота Telegram</td></tr>
+        <tr><td class="m">/var/log/nginx/</td><td>Журналы nginx, у сайтов свои в /var/log/ispconfig/httpd/</td></tr>
+        <tr><td class="m">journalctl -u crowdsec</td><td>Что и за что банит CrowdSec</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- ПРОБЛЕМЫ -->
+  <section class="doc" id="trouble">
+    <span class="label eyebrow">Справочник</span>
+    <h2>Решение проблем</h2>
+
+    <details class="qa"><summary>Установка остановилась на одном из этапов</summary><div>
+      <p>Посмотрите последние строки журнала, там будет строка с <code>[✗]</code> и причина:</p>
+      <pre class="code">grep -n '\[✗\]' /var/log/luckystack/setup.log | tail -5</pre>
+      <p>Частые причины: не скачался архив с исходниками (сеть или зеркало), кончилась память при сборке, у хостера закрыт порт 25. После исправления запустите <code>luckyctl install --resume</code>, пройденные этапы повторяться не будут.</p>
+    </div></details>
+
+    <details class="qa"><summary>Панель не открывается</summary><div>
+      <p>Проверьте три вещи по порядку:</p>
+      <ul>
+        <li>Вы заходите по имени сервера, а не по IP. По IP панель ничего не отдаёт.</li>
+        <li>Ваш текущий IP есть в списке доступа. Если адрес сменился, добавьте его в панели Firewall IP-rules с другого адреса из списка, или с сервера: <code>ufw allow from 203.0.113.5 to any port 8080 proto tcp</code> (порт ваш, из мастера).</li>
+        <li>Адрес не забанен: <code>cscli decisions list | grep 203.0.113.5</code>. Снять бан: <code>cscli decisions delete --ip 203.0.113.5</code>.</li>
+      </ul>
+    </div></details>
+
+    <details class="qa"><summary>После обновления nginx сайты не открываются</summary><div>
+      <p>Сначала проверьте конфиг командой <code>nginx -t</code>. Если ошибка в конфиге, она будет в выводе. Если конфиг в порядке, а проблема в новой сборке, верните прошлую: <code>luckyctl rollback nginx</code>. Откат занимает секунды и сам проверяет, что прошлая сборка принимает ваш конфиг.</p>
+    </div></details>
+
+    <details class="qa"><summary>В панели задание пишет «установщик уже запущен»</summary><div>
+      <p>Значит, обновление уже идёт: из консоли или другим заданием. Дождитесь окончания. Если вы уверены, что ничего не идёт, проверьте <code>cat /run/luckystack-update.pid</code> и есть ли такой процесс. После перезагрузки этот файл исчезает сам.</p>
+    </div></details>
+
+    <details class="qa"><summary>Задание пишет «небезопасные права или владелец»</summary><div>
+      <p>Панель отказывается запускать установщик, если его файлы может менять кто-то кроме root. Обычно это следствие копирования через FTP или распаковки не от root. Исправить:</p>
+      <pre class="code">chown -R root:root /opt/luckystack
+chmod -R go-w /opt/luckystack</pre>
+    </div></details>
+
+    <details class="qa"><summary>Не приходят уведомления</summary><div>
+      <p>Нажмите Тест на странице Уведомления. Если в Telegram пришло, а на почту нет, загляните в очередь почты <code>mailq</code> и в папку Спам. Для доставки на внешние ящики у домена отправителя должны быть DKIM и SPF, их можно включить в ISPConfig у почтового домена.</p>
+    </div></details>
+
+    <details class="qa"><summary>Нужна помощь</summary><div>
+      <p>Соберите архив диагностики. В нём версии, состояние служб, настройки и хвосты журналов, пароли и токены из них вырезаются:</p>
+      <pre class="code">luckyctl diagnostics</pre>
+      <p>Архив можно приложить к issue в <a href="https://github.com/Leden4ik/luckystack/issues">репозитории на GitHub</a>.</p>
+    </div></details>
+  </section>
+
+  <!-- FAQ -->
+  <section class="doc" id="faq">
+    <span class="label eyebrow">Справочник</span>
+    <h2>Вопросы</h2>
+    <details class="qa"><summary>Можно поставить на сервер, где уже есть сайты?</summary><div>
+      <p>Мастер рассчитан на чистый сервер и остановится, если найдёт рабочую установку. Для сервера, собранного вручную по гайду Perfect Server, есть <code>luckyctl adopt</code>: сначала бэкап, потом подтверждение, и ставятся только бэкап, уведомления и защита. Ваш nginx, шаблоны и конфиги ISPConfig не трогаются.</p>
+    </div></details>
+    <details class="qa"><summary>Почему nginx собирается из исходников?</summary><div>
+      <p>Пакетный nginx в Debian идёт без HTTP/3 и Brotli и со старым OpenSSL. Сборка даёт свежий nginx, OpenSSL с долгой поддержкой и только нужные модули. Обновлять её не сложнее, чем пакет: одна галочка в панели, а прошлая сборка остаётся для отката.</p>
+    </div></details>
+    <details class="qa"><summary>Обновление ISPConfig не сотрёт ваши правки?</summary><div>
+      <p>Апдейтер ISPConfig действительно перезаписывает часть файлов. Поэтому после него LuckyStack заново накладывает свои правки, а меню Дополнения лежит в отдельном каталоге, который апдейтер не трогает.</p>
+    </div></details>
+    <details class="qa"><summary>Чем это отличается от ISPConfig Autoinstaller?</summary><div>
+      <p>Autoinstaller ставит ISPConfig и пакеты из репозиториев, дальше сервер ваш. LuckyStack ставит сборку nginx, защиту и бэкапы, а главное остаётся с сервером дальше: обновляет, откатывает, проверяет и сообщает о проблемах.</p>
+    </div></details>
+    <details class="qa"><summary>Где хранятся пароли?</summary><div>
+      <p>В <code>setup.conf</code> с доступом только для root. В журналы пароли не пишутся, при записи они маскируются.</p>
+    </div></details>
+    <details class="qa"><summary>Можно ли удалить LuckyStack и оставить сервер?</summary><div>
+      <p>Да. Все службы обычные: nginx, PHP-FPM, MariaDB, ISPConfig. Если удалить LuckyStack, сервер продолжит работать, пропадут только наши панели, бэкап по расписанию и уведомления.</p>
+    </div></details>
+  </section>
+
+  <!-- ДАЛЬШЕ -->
+  <section class="doc" id="roadmap">
+    <span class="label eyebrow">Справочник</span>
+    <h2>Что дальше</h2>
+    <p>Первый выпуск вышел: команда luckyctl, раскладка по /opt, /etc и /var, проверка на Debian 12 и 13, Ubuntu 22.04 и 24.04. Следом:</p>
+    <ul>
+      <li>Полноценный Apache: те же защита, тюнинг и дополнения, что у nginx.</li>
+      <li>Установка одной командой через get.sh и подписанные выпуски, чтобы установка и self-update проверяли, что скачано именно то.</li>
+      <li>Копия бэкапов на второй сервер, которую нельзя удалить с основного.</li>
+      <li>Английский язык в консоли. Панели уже на двух языках.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>LuckyStack · <a href="https://luckyman.name/">luckyman.name</a></span>
+    <span>Код на <a href="https://github.com/Leden4ik/luckystack">GitHub</a> · <a href="https://github.com/Leden4ik/luckystack/releases">выпуски</a> · лицензия MIT</span>
+  </footer>
+</main>
+</div>
+</div>
+
+<script>
+(function () {
+  var root = document.documentElement;
+
+  // тема
+  var themeBtn = document.getElementById('theme');
+  try { var saved = localStorage.getItem('ls-theme'); if (saved === 'light' || saved === 'dark') root.setAttribute('data-theme', saved); } catch (e) {}
+  themeBtn.addEventListener('click', function () {
+    var cur = root.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    var next = cur === 'light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('ls-theme', next); } catch (e) {}
+    paint();
+  });
+
+  // оглавление на узком экране
+  var toc = document.getElementById('toc'), menu = document.getElementById('menu');
+  menu.addEventListener('click', function () {
+    var open = toc.classList.toggle('open');
+    menu.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  toc.addEventListener('click', function (e) {
+    if (e.target.tagName === 'A') { toc.classList.remove('open'); menu.setAttribute('aria-expanded', 'false'); }
+  });
+
+  // подсветка текущего раздела
+  var links = Array.prototype.slice.call(toc.querySelectorAll('a'));
+  var secs = links.map(function (a) { return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+  function spy() {
+    var y = 110, cur = secs[0];
+    for (var i = 0; i < secs.length; i++) { if (secs[i].getBoundingClientRect().top - y <= 0) cur = secs[i]; }
+    if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 4) cur = secs[secs.length - 1];
+    links.forEach(function (a) { a.classList.toggle('on', a.getAttribute('href') === '#' + cur.id); });
+  }
+  window.addEventListener('scroll', spy, { passive: true }); spy();
+
+  // копирование
+  document.querySelectorAll('.copy').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var el = document.getElementById(b.getAttribute('data-copy'));
+      var text = el.textContent.replace(/^\$\s*/, '');
+      var done = function () { b.textContent = 'Скопировано'; setTimeout(function () { b.textContent = 'Копировать'; }, 1600); };
+      var select = function () { var r = document.createRange(); r.selectNodeContents(el); var s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = 'Выделено'; };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, select); else select();
+    });
+  });
+
+  // вкладки в макете панели
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('#mock-maint [role="tab"]'));
+  function show(t) {
+    tabs.forEach(function (x) {
+      var on = x === t;
+      x.setAttribute('aria-selected', on ? 'true' : 'false');
+      x.tabIndex = on ? 0 : -1;
+      document.getElementById(x.getAttribute('aria-controls')).hidden = !on;
+    });
+  }
+  tabs.forEach(function (t, i) {
+    t.addEventListener('click', function () { show(t); });
+    t.addEventListener('keydown', function (e) {
+      var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (d) { var n = tabs[(i + d + tabs.length) % tabs.length]; show(n); n.focus(); e.preventDefault(); }
+    });
+  });
+
+  // звёзды
+  var c = document.getElementById('sky'), ctx = c.getContext('2d'), stars = [], w = 0, h = 0;
+  var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function size() {
+    var d = Math.min(window.devicePixelRatio || 1, 2);
+    w = c.clientWidth; h = c.clientHeight; c.width = w * d; c.height = h * d; ctx.setTransform(d, 0, 0, d, 0, 0);
+    var n = Math.round(w * h / 11000); stars = [];
+    for (var i = 0; i < n; i++) stars.push({ x: Math.random() * w, y: Math.random() * h, r: Math.random() * 1.1 + .2, a: Math.random() * .5 + .12, v: Math.random() * .05 + .01 });
+  }
+  function rgb() { return getComputedStyle(root).getPropertyValue('--star').trim() || '255, 255, 255'; }
+  function paint() { var col = rgb(); ctx.clearRect(0, 0, w, h); for (var i = 0; i < stars.length; i++) { var s = stars[i]; ctx.fillStyle = 'rgba(' + col + ',' + s.a + ')'; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.283); ctx.fill(); } }
+  function tick() { for (var i = 0; i < stars.length; i++) { var s = stars[i]; s.y += s.v; if (s.y > h) { s.y = 0; s.x = Math.random() * w; } } paint(); requestAnimationFrame(tick); }
+  size(); window.addEventListener('resize', function () { size(); paint(); });
+  if (still) paint(); else tick();
+  matchMedia('(prefers-color-scheme: light)').addEventListener('change', paint);
+})();
+</script>
+
+</body>
+</html>
